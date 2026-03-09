@@ -10,7 +10,7 @@ A **fast, practical cheat sheet** for daily sysadmin, DevSecOps, log analysis, a
 
 ## Mental Model (Quick Recall)
 
-```bash
+```awk
 awk 'pattern { action }' file
 ```
 
@@ -39,42 +39,42 @@ awk 'pattern { action }' file
 ## Common One-Liners (Daily Use)
 
 <Accordion title="Print field(s)">
-```bash
+```awk
 awk '{ print $2 }' file
 ```
 Extracts the second field from each line.
 </Accordion>
 
 <Accordion title="Prefix output">
-```bash
+```awk
 awk '{ print "ll  "$2 }' /etc/fstab
 ```
 Adds a prefix to field output for better readability.
 </Accordion>
 
 <Accordion title="Print mountpoints only">
-```bash
+```awk
 df -h | awk 'NR>1 { print $NF }'
 ```
 Skips the header line and prints the last field (mountpoint).
 </Accordion>
 
 <Accordion title="Skip comments + blank lines">
-```bash
+```awk
 awk '!/^#/ && NF { print $0 }'
 ```
 Filters out comments (lines starting with #) and blank lines.
 </Accordion>
 
 <Accordion title="Filter rows by value">
-```bash
+```awk
 awk '$3 == "ext4"' /etc/fstab
 ```
 Shows only lines where the third field equals "ext4".
 </Accordion>
 
 <Accordion title="Lines matching regex">
-```bash
+```awk
 awk '/error/ { print }' /var/log/app.log
 ```
 Prints lines containing the word "error".
@@ -85,15 +85,15 @@ Prints lines containing the word "error".
 ## Field Separators (FS)
 
 <CodeGroup>
-```bash Input delimiter (colon)
+```awk Input delimiter (colon)
 awk -F":" '{ print $1 }' /etc/passwd
 ```
 
-```bash CSV parsing
+```awk CSV parsing
 awk -F"," '{ print $3 }' file.csv
 ```
 
-```bash Regex delimiter
+```awk Regex delimiter
 awk -F"[ ,:]" '{ print $1 }'
 ```
 </CodeGroup>
@@ -107,14 +107,14 @@ Use `-F` to specify custom field separators. Multiple delimiters can be specifie
 ## Output Formatting (OFS)
 
 <Accordion title="Change output separator">
-```bash
+```awk
 awk 'BEGIN { OFS="," } { print $1, $2 }' file
 ```
 Outputs fields separated by commas instead of spaces.
 </Accordion>
 
 <Accordion title="Pretty formatting with printf">
-```bash
+```awk
 awk '{ printf "%-20s %s\n", $1, $2 }'
 ```
 Left-aligns first field in 20-character column.
@@ -126,14 +126,14 @@ Left-aligns first field in 20-character column.
 
 <Steps>
   <Step title="Sum a column">
-    ```bash
+    ```awk
     awk '{ sum+=$2 } END { print sum }'
     ```
     Adds up all values in the second field.
   </Step>
   
   <Step title="Count lines">
-    ```bash
+    ```awk
     awk 'END { print NR }'
     ```
     Returns total number of lines processed.
@@ -149,11 +149,11 @@ The `END` block executes after all input lines have been processed, making it pe
 ## Conditionals
 
 <CodeGroup>
-```bash Simple if
+```awk Simple if
 awk '{ if ($3 > 10) print $0 }'
 ```
 
-```bash If/else
+```awk If/else
 awk '{ if ($3>100) print "HIGH"; else print "LOW" }'
 ```
 </CodeGroup>
@@ -179,28 +179,28 @@ awk '{ if ($3>100) print "HIGH"; else print "LOW" }'
 ## Useful Practical Snippets
 
 <Accordion title="Remove duplicate lines">
-```bash
+```awk
 awk '!seen[$0]++' file
 ```
 Keeps only the first occurrence of each unique line.
 </Accordion>
 
 <Accordion title="Extract column and transform">
-```bash
+```awk
 awk '{ print toupper($1) }'
 ```
 Converts first field to uppercase.
 </Accordion>
 
 <Accordion title="Replace text inline">
-```bash
+```awk
 awk '{ gsub("old","new"); print }'
 ```
 Replaces all occurrences of "old" with "new" in each line.
 </Accordion>
 
 <Accordion title="Print field indexes (debug)">
-```bash
+```awk
 awk '{ for (i=1;i<=NF;i++) print i, $i }'
 ```
 Shows field number and value for debugging.
@@ -216,7 +216,7 @@ Always test AWK commands on sample data before running on production logs or sys
 
 ### Parse fstab quickly
 
-```bash
+```awk
 awk '!/^#/ && NF { print $1, $2, $3 }' /etc/fstab
 ```
 
@@ -224,7 +224,7 @@ Skips comments and blank lines, shows device, mountpoint, and filesystem type.
 
 ### Extract blocked IPs from logs
 
-```bash
+```awk
 awk '/DENIED/ { print $NF }' firewall.log
 ```
 
@@ -232,7 +232,7 @@ Finds all "DENIED" entries and prints the last field (typically the IP).
 
 ### Show failed SSH attempts
 
-```bash
+```awk
 awk '/Failed password/ { print $(NF-3) }' /var/log/auth.log
 ```
 

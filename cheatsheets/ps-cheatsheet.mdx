@@ -14,13 +14,13 @@ A fast, practical cheat sheet for process inspection and troubleshooting. Design
 
 <CardGroup cols={2}>
   <Card title="BSD style" icon="terminal">
-    ```bash
+    ```sh
     ps aux
     ```
     Human-friendly output with all users
   </Card>
   <Card title="Unix style" icon="list">
-    ```bash
+    ```sh
     ps -ef
     ```
     Full format with PIDs and parent PIDs
@@ -37,7 +37,7 @@ Both styles are useful in different contexts. BSD style is typically more human-
 
 ### Show all processes (human-friendly)
 
-```bash
+```sh
 ps aux
 ```
 
@@ -55,7 +55,7 @@ ps aux
 
 ### Show all processes (Unix format)
 
-```bash
+```sh
 ps -ef
 ```
 
@@ -67,28 +67,28 @@ ps -ef
 ## Filtering Processes
 
 <Accordion title="Search for a process by name">
-```bash
+```sh
 ps aux | grep sshd
 ```
 Uses grep to filter process list for specific name.
 </Accordion>
 
 <Accordion title="Using ps built-in pattern match (GNU)">
-```bash
+```sh
 ps -C sshd -f
 ```
 More efficient than piping to grep.
 </Accordion>
 
 <Accordion title="Show processes for a user">
-```bash
+```sh
 ps -u root
 ```
 Lists all processes owned by the specified user.
 </Accordion>
 
 <Accordion title="Filter by PID">
-```bash
+```sh
 ps -p 1234 -f
 ```
 Shows detailed information for a specific process ID.
@@ -143,34 +143,34 @@ Zombie processes (`Z` state) indicate the parent process hasn't properly cleaned
 ## Formatting Output
 
 <Accordion title="Custom columns">
-```bash
+```sh
 ps -eo pid,ppid,user,%cpu,%mem,cmd
 ```
 Select only the columns you need for better readability.
 </Accordion>
 
 <Accordion title="Sorted by memory">
-```bash
+```sh
 ps -eo pid,user,%mem,cmd --sort=-%mem
 ```
 Shows highest memory consumers first (note the `-` prefix for descending order).
 </Accordion>
 
 <Accordion title="Sorted by CPU">
-```bash
+```sh
 ps -eo pid,user,%cpu,cmd --sort=-%cpu
 ```
 Identifies CPU-intensive processes quickly.
 </Accordion>
 
 <Accordion title="Tree view (relationships)">
-```bash
+```sh
 ps -ejH
 ```
 
 Or:
 
-```bash
+```sh
 ps -ef --forest
 ```
 Shows parent-child process relationships visually.
@@ -186,7 +186,7 @@ Use custom column selection (`-eo`) to reduce noise and focus on relevant inform
 
 ### Highest CPU consumers
 
-```bash
+```sh
 ps -eo pid,%cpu,cmd --sort=-%cpu | head
 ```
 
@@ -194,7 +194,7 @@ Quickly identify processes consuming the most CPU time.
 
 ### Highest memory consumers
 
-```bash
+```sh
 ps -eo pid,%mem,cmd --sort=-%mem | head
 ```
 
@@ -202,7 +202,7 @@ Find memory-hungry processes during resource exhaustion incidents.
 
 ### Find processes holding deleted files
 
-```bash
+```sh
 ps -ef | grep deleted
 ```
 
@@ -212,7 +212,7 @@ Processes holding open file handles to deleted files can cause disk space issues
 
 ### Show environment variables for a PID
 
-```bash
+```sh
 ps -p 1234 -eo pid,cmd
 cat /proc/1234/environ | tr '\0' '\n'
 ```

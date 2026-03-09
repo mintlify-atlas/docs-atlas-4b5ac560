@@ -50,7 +50,7 @@ This procedure documents how to migrate Ceph traffic from a congested management
 
 Create a **dedicated bridge** on each node:
 
-```bash
+```sh
 vim /etc/network/interfaces
 ```
 
@@ -76,7 +76,7 @@ iface vmbr-ceph inet static
 
 **Verify connectivity**:
 
-```bash
+```sh
 ping 10.50.0.30
 iperf3 -s  # On one node
 iperf3 -c 10.50.0.30  # From another node
@@ -100,7 +100,7 @@ cluster_network = 10.50.0.0/24, 172.16.0.0/16
 </Info>
 
 Confirm:
-```bash
+```sh
 ceph config dump
 ```
 
@@ -110,17 +110,17 @@ Verify in Proxmox UI → **Ceph → Nodes**
 
 <Steps>
   <Step title="Destroy First MON">
-    ```bash
+    ```sh
     pveceph mon destroy pve2
     ```
   </Step>
   <Step title="Recreate MON">
-    ```bash
+    ```sh
     pveceph mon create
     ```
   </Step>
   <Step title="Verify Quorum">
-    ```bash
+    ```sh
     ceph -s
     ```
     Ensure quorum is maintained before proceeding
@@ -140,19 +140,19 @@ Verify in Proxmox UI → **Ceph → Nodes**
   Recreate **standby managers first**, then the **active manager last**.
 </Info>
 
-```bash
+```sh
 pveceph mgr destroy <node>
 pveceph mgr create
 ```
 
 **Verify**:
-```bash
+```sh
 ceph mgr dump
 ```
 
 <Accordion title="Recovery Tip: MGR Fails to Start">
   If a manager fails to start:
-  ```bash
+  ```sh
   systemctl reset-failed ceph-mgr@<node>
   systemctl start ceph-mgr@<node>
   ```
@@ -164,7 +164,7 @@ ceph mgr dump
   MDS binds its address **at creation time**
 </Note>
 
-```bash
+```sh
 pveceph mds destroy <node>
 pveceph mds create
 ```
@@ -198,7 +198,7 @@ This ensures **all control-plane daemons bind exclusively** to the new network.
 
 ### Step 8: Protect the Cluster Before Touching OSDs
 
-```bash
+```sh
 ceph osd set noout
 ```
 
@@ -210,7 +210,7 @@ ceph osd set noout
 
 Restart **one OSD at a time**:
 
-```bash
+```sh
 systemctl restart ceph-osd@<id>
 ceph -s
 ```
@@ -227,7 +227,7 @@ PGs: active+clean
 
 ### Step 10: Remove Protection
 
-```bash
+```sh
 ceph osd unset noout
 ```
 
@@ -235,7 +235,7 @@ ceph osd unset noout
 
 ### 1. Verify Ceph Daemon Addresses
 
-```bash
+```sh
 ceph osd metadata <id> | egrep 'front_addr|back_addr'
 ```
 
@@ -248,7 +248,7 @@ ceph osd metadata <id> | egrep 'front_addr|back_addr'
 
 While Ceph is under load:
 
-```bash
+```sh
 ip -s link show vmbr-ceph
 ```
 
@@ -260,17 +260,17 @@ RX/TX counters should increase, confirming traffic is **not** using the manageme
   `iperf3` must be installed on **all Ceph nodes**
 </Warning>
 
-```bash
+```sh
 apt install iperf3
 ```
 
 **Server on one node**:
-```bash
+```sh
 iperf3 -s
 ```
 
 **Client on a different node**:
-```bash
+```sh
 iperf3 -c <peer_ip> -P 4
 ```
 
@@ -294,21 +294,21 @@ osd.X's public address is not in '172.16.x.x/16' subnet
 
 <Steps>
   <Step title="Restart ALL MONs (mandatory)">
-    ```bash
+    ```sh
     systemctl restart ceph-mon@pve2
     systemctl restart ceph-mon@pve3
     systemctl restart ceph-mon@pve4
     ```
   </Step>
   <Step title="Restart ALL MGRs (mandatory)">
-    ```bash
+    ```sh
     systemctl restart ceph-mgr@pve2
     systemctl restart ceph-mgr@pve3
     systemctl restart ceph-mgr@pve4
     ```
   </Step>
   <Step title="Clean Config DB (optional)">
-    ```bash
+    ```sh
     ceph config rm global public_network
     ceph config rm global cluster_network
     ceph config set global public_network 10.50.0.0/24

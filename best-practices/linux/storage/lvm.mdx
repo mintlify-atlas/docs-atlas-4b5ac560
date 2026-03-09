@@ -25,7 +25,7 @@ This improves scalability, snapshotting, resizing, and overall storage managemen
 - Forms the building blocks of a VG
 - Can be added or removed to adjust total capacity
 
-```bash
+```sh
 # Create a physical volume
 pvcreate /dev/sdb
 
@@ -45,7 +45,7 @@ pvdisplay
 - Expands by adding more PVs
 - Space is allocated to LVs from the VG
 
-```bash
+```sh
 # Create a volume group
 vgcreate my_vg /dev/sdb /dev/sdc
 
@@ -68,7 +68,7 @@ vgdisplay
 - Can be resized dynamically
 - Supports snapshots and thin provisioning
 
-```bash
+```sh
 # Create a logical volume
 lvcreate -L 50G -n my_lv my_vg
 
@@ -141,26 +141,26 @@ flowchart TD
 <Steps>
   <Step title="Create Physical Volumes">
     Initialize disks for LVM use
-    ```bash
+    ```sh
     pvcreate /dev/sdb /dev/sdc /dev/sdd
     ```
   </Step>
   <Step title="Create Volume Group">
     Pool physical volumes together
-    ```bash
+    ```sh
     vgcreate data_vg /dev/sdb /dev/sdc /dev/sdd
     ```
   </Step>
   <Step title="Create Logical Volumes">
     Allocate space from the volume group
-    ```bash
+    ```sh
     lvcreate -L 100G -n database_lv data_vg
     lvcreate -L 50G -n logs_lv data_vg
     ```
   </Step>
   <Step title="Create Filesystems">
     Format and mount the logical volumes
-    ```bash
+    ```sh
     mkfs.xfs /dev/data_vg/database_lv
     mkfs.xfs /dev/data_vg/logs_lv
     mount /dev/data_vg/database_lv /var/lib/mysql
@@ -175,7 +175,7 @@ flowchart TD
   LVM allows **online resizing** — you can grow volumes while they're mounted and in use. See [Online Storage Resize](/best-practices/linux/storage/online-resize) for details.
 </Tip>
 
-```bash
+```sh
 # Extend logical volume
 lvextend -L +50G /dev/data_vg/database_lv
 
@@ -190,7 +190,7 @@ resize2fs /dev/data_vg/database_lv
 
 Create point-in-time snapshots for backups or testing:
 
-```bash
+```sh
 # Create snapshot
 lvcreate -L 10G -s -n database_snap /dev/data_vg/database_lv
 
@@ -212,7 +212,7 @@ lvremove /dev/data_vg/database_snap
 
 Use `lsblk` to see the complete storage hierarchy:
 
-```bash
+```sh
 lsblk -e7 -o NAME,HCTL,SIZE,TYPE,FSTYPE,MOUNTPOINT
 ```
 
@@ -233,7 +233,7 @@ mountpoint (/mnt/mpathX)
 ### Common Issues
 
 <Accordion title="Volume Group Not Found">
-  ```bash
+  ```sh
   # Scan for volume groups
   vgscan
   
@@ -243,7 +243,7 @@ mountpoint (/mnt/mpathX)
 </Accordion>
 
 <Accordion title="Check Volume Group Free Space">
-  ```bash
+  ```sh
   # Summary view
   vgs
   
@@ -253,7 +253,7 @@ mountpoint (/mnt/mpathX)
 </Accordion>
 
 <Accordion title="Repair LVM Metadata">
-  ```bash
+  ```sh
   # Backup metadata
   vgcfgbackup my_vg
   

@@ -55,12 +55,12 @@ Modern enterprise SAN systems (such as **Dell EMC ME4**) support **live, nondisr
 
 After expanding the LUN on the SAN:
 
-```bash
+```sh
 # Rescan SCSI bus for new size
 rescan-scsi-bus.sh --resize
 ```
 
-```bash
+```sh
 # Update multipath device
 multipathd -k
 # Inside multipathd shell:
@@ -79,7 +79,7 @@ multipathd> resize map mpathX
 
 ### Verify All Paths Are Resized
 
-```bash
+```sh
 multipath -ll mpathX
 blockdev --getsize64 /dev/sdX
 blockdev --getsize64 /dev/mapper/mpathX
@@ -185,14 +185,14 @@ This is one of the clearest vendor statements that XFS online growth is not just
 
 ### XFS Growth Command
 
-```bash
+```sh
 # Grow XFS filesystem to use all available space
 xfs_growfs /mount/point
 ```
 
 ### ext4 Growth Command
 
-```bash
+```sh
 # Grow ext4 filesystem online
 resize2fs /dev/mapper/vg-lv
 ```
@@ -210,7 +210,7 @@ When an XFS or ext4 filesystem exported over NFSv4 is grown on the server, clien
 </Note>
 
 **Verify on client**:
-```bash
+```sh
 df -h /mnt/nfs_share
 ```
 
@@ -221,48 +221,48 @@ df -h /mnt/nfs_share
     Use SAN management interface to grow the LUN
   </Step>
   <Step title="Rescan SCSI Bus">
-    ```bash
+    ```sh
     rescan-scsi-bus.sh --resize
     ```
   </Step>
   <Step title="Verify All Paths">
-    ```bash
+    ```sh
     multipath -ll mpathX
     blockdev --getsize64 /dev/mapper/mpathX
     ```
     All paths must show new size
   </Step>
   <Step title="Resize Multipath Device">
-    ```bash
+    ```sh
     multipathd -k
     multipathd> resize map mpathX
     ```
   </Step>
   <Step title="Resize Physical Volume">
-    ```bash
+    ```sh
     pvresize /dev/mapper/mpathX
     pvs  # Verify new size
     ```
   </Step>
   <Step title="Extend Logical Volume">
-    ```bash
+    ```sh
     lvextend -l +100%FREE /dev/vg/lv
     lvs  # Verify new size
     ```
   </Step>
   <Step title="Grow Filesystem">
     For XFS:
-    ```bash
+    ```sh
     xfs_growfs /mount/point
     ```
     
     For ext4:
-    ```bash
+    ```sh
     resize2fs /dev/vg/lv
     ```
   </Step>
   <Step title="Verify New Size">
-    ```bash
+    ```sh
     df -h /mount/point
     ```
   </Step>
@@ -349,27 +349,27 @@ This produced the legacy rule:
 
 <Accordion title="PV Not Showing New Size">
   Verify all paths are updated:
-  ```bash
+  ```sh
   multipath -ll
   blockdev --getsize64 /dev/mapper/mpathX
   pvs
   ```
   
   Force rescan if needed:
-  ```bash
+  ```sh
   echo 1 > /sys/class/block/sdX/device/rescan
   ```
 </Accordion>
 
 <Accordion title="Filesystem Not Growing">
   Verify the underlying LV was extended:
-  ```bash
+  ```sh
   lvs
   df -h
   ```
   
   For XFS, ensure you specify the mount point (not device):
-  ```bash
+  ```sh
   xfs_growfs /mount/point  # Correct
   xfs_growfs /dev/vg/lv    # Wrong
   ```
@@ -377,7 +377,7 @@ This produced the legacy rule:
 
 <Accordion title="Multipath Not Detecting New Size">
   Reload multipath configuration:
-  ```bash
+  ```sh
   multipathd reconfigure
   multipathd -k
   multipathd> resize map mpathX

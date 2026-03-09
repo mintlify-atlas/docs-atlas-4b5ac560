@@ -141,7 +141,7 @@ Default reference bandwidth = 100 Mbps
 
 ### Adjusting Reference Bandwidth
 
-```bash
+```cisco
 Router(config-router)# auto-cost reference-bandwidth 10000
 ```
 
@@ -162,7 +162,7 @@ This ensures 10G+ interfaces have realistic costs.
 
 ### Example: MD5 Authentication
 
-```bash
+```cisco
 Router(config)# interface GigabitEthernet0/0
 Router(config-if)# ip ospf authentication message-digest
 Router(config-if)# ip ospf message-digest-key 1 md5 MySecureKey

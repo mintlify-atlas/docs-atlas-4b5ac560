@@ -14,7 +14,7 @@ Unlike iptables, nftables supports modern abstractions and cleaner syntax, makin
 
 ### Basic Table Structure
 
-```bash
+```nft
 table inet filter {
     chain input {
         type filter hook input priority 0;
@@ -34,7 +34,7 @@ Sets replace the legacy `ipset` from iptables, providing easier management of IP
 
 Use sets to manage groups of hosts or networks:
 
-```bash
+```nft
 set blacklist {
     type ipv4_addr;
     elements = { 
@@ -53,7 +53,7 @@ chain input {
 
 Simplify multi-service allow/deny rules:
 
-```bash
+```nft
 set web_ports {
     type inet_service;
     elements = { 80, 443 }
@@ -81,7 +81,7 @@ chain input {
 
 ### Example: Logging Chain
 
-```bash
+```nft
 chain log_drop {
     log prefix "NFT DROP: " flags all
     drop
@@ -113,7 +113,7 @@ chain log_drop {
 
 ### Rate Limiting Example
 
-```bash
+```nft
 limit rate 5/minute accept
 ```
 
@@ -142,7 +142,7 @@ limit rate 5/minute accept
 
 ### Testing Workflow
 
-```bash
+```sh
 # Test new rules
 nft -f new_rules.conf
 
@@ -158,7 +158,7 @@ nft list ruleset
 
 This example demonstrates multi-line sets and proper rule organization for IT administrative access:
 
-```yaml
+```nft
 table inet filter {
     # IT hosts allowed to access sensitive services
     set it_hosts {
