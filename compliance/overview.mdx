@@ -1,0 +1,214 @@
+---
+title: "Compliance & Security"
+description: "Security frameworks, governance, risk management, and compliance requirements"
+icon: "shield-check"
+---
+
+<Info>
+This section contains documentation and guides on security frameworks, governance, risk management, and compliance requirements. It focuses on aligning infrastructure and operations with industry standards and regulations.
+</Info>
+
+## Overview
+
+Compliance is treated as **infrastructure-as-code** — policies, controls, and audit evidence are versioned, peer-reviewed, and subject to the same quality standards as infrastructure.
+
+<CardGroup cols={2}>
+  <Card title="Standards & Frameworks" icon="book-open">
+    NIST 800-53, ISO 27001, Cyber Essentials+, CIS Benchmarks
+  </Card>
+  <Card title="Policies" icon="file-shield">
+    Internal security policies, access controls, operational standards
+  </Card>
+  <Card title="Audits & Checklists" icon="clipboard-check">
+    Self-assessment templates, readiness checklists, audit preparation
+  </Card>
+  <Card title="Regulatory" icon="gavel">
+    Sector-specific requirements: GDPR, CE+, HIPAA
+  </Card>
+</CardGroup>
+
+---
+
+## Sections
+
+### Standards & Frameworks
+
+Industry-recognized security and compliance frameworks:
+
+<Accordion title="NIST 800-53">
+Comprehensive catalog of security and privacy controls for federal information systems. Widely adopted as a baseline for security architecture.
+
+**Key Focus Areas:**
+- Access Control (AC)
+- Audit and Accountability (AU)
+- Security Assessment and Authorization (CA)
+- Configuration Management (CM)
+- Incident Response (IR)
+- System and Communications Protection (SC)
+</Accordion>
+
+<Accordion title="ISO 27001">
+International standard for information security management systems (ISMS). Focuses on risk management and continuous improvement.
+
+**Core Components:**
+- Asset management
+- Access control
+- Cryptography
+- Physical security
+- Operations security
+- Communications security
+</Accordion>
+
+<Accordion title="Cyber Essentials / Cyber Essentials Plus">
+UK government-backed scheme providing baseline security controls against common cyber threats.
+
+**Five Control Areas:**
+- Firewalls
+- Secure configuration
+- User access control
+- Malware protection
+- Patch management
+</Accordion>
+
+<Accordion title="CIS Benchmarks">
+Consensus-based security configuration guides for operating systems, cloud platforms, and applications.
+</Accordion>
+
+---
+
+### Policies
+
+Internal security policies and operational standards:
+
+<Steps>
+  <Step title="Access Control Policy">
+    Defines authentication requirements, privilege management, and least-privilege principles.
+  </Step>
+  <Step title="Backup & Recovery Policy">
+    Retention schedules, backup verification, and disaster recovery procedures.
+  </Step>
+  <Step title="Incident Response Policy">
+    Detection, containment, eradication, and post-incident analysis procedures.
+  </Step>
+  <Step title="Change Management Policy">
+    Controlled changes to production systems with peer review and rollback procedures.
+  </Step>
+</Steps>
+
+<Warning>
+All policies should be reviewed annually and updated when infrastructure or threat landscape changes.
+</Warning>
+
+---
+
+### Audits & Checklists
+
+Self-assessment tools and audit preparation resources:
+
+<CardGroup cols={2}>
+  <Card title="Readiness Checklist" icon="list-check">
+    Pre-audit verification of controls and evidence collection
+  </Card>
+  <Card title="Control Mapping" icon="diagram-project">
+    Map technical implementations to framework requirements
+  </Card>
+  <Card title="Evidence Collection" icon="folder-open">
+    Automated collection of logs, configs, and proof of controls
+  </Card>
+  <Card title="Gap Analysis" icon="magnifying-glass-chart">
+    Identify missing or incomplete controls before formal audit
+  </Card>
+</CardGroup>
+
+---
+
+### Regulatory
+
+Sector-specific compliance requirements:
+
+<Accordion title="GDPR (General Data Protection Regulation)">
+**Scope:** EU/UK data protection and privacy law
+
+**Key Requirements:**
+- Lawful basis for processing personal data
+- Data subject rights (access, erasure, portability)
+- Data breach notification (72-hour window)
+- Privacy by design and by default
+- Data Protection Impact Assessments (DPIA)
+</Accordion>
+
+<Accordion title="Cyber Essentials+ (CE+)">
+**Scope:** UK baseline security certification
+
+**Assessment:** Technical verification of security controls via vulnerability scan and configuration review
+
+**Renewal:** Annual re-certification required
+</Accordion>
+
+<Accordion title="HIPAA (Healthcare - US only)">
+**Scope:** Protected Health Information (PHI) security and privacy
+
+**Key Controls:**
+- Access controls and audit logs
+- Encryption at rest and in transit
+- Business Associate Agreements (BAA)
+- Breach notification procedures
+</Accordion>
+
+---
+
+## Getting Started
+
+<Steps>
+  <Step title="Choose Your Framework">
+    Start with **Standards & Frameworks** section for baseline controls. NIST 800-53 and Cyber Essentials+ provide excellent starting points.
+  </Step>
+  
+  <Step title="Establish Policies">
+    Define internal security policies based on your chosen framework. Document acceptance criteria and ownership.
+  </Step>
+  
+  <Step title="Implement Controls">
+    Deploy technical and administrative controls. Use infrastructure-as-code where possible for auditability.
+  </Step>
+  
+  <Step title="Continuous Assessment">
+    Use audit checklists and gap analysis tools to validate controls remain effective as your environment evolves.
+  </Step>
+</Steps>
+
+<Tip>
+Treat compliance as a continuous process, not a one-time project. Automate evidence collection and control validation wherever possible.
+</Tip>
+
+---
+
+## Compliance Philosophy
+
+<Note>
+**Compliance is not security** — but it provides a structured baseline and audit trail.
+
+The goal is to:
+- Establish **repeatable, verifiable controls**
+- Maintain **audit evidence** for regulatory and insurance purposes
+- Create **operational discipline** around security practices
+- Enable **risk-based decision making**
+</Note>
+
+### Design Principles
+
+- **Evidence-based:** All controls must be measurable and auditable
+- **Automation-first:** Use code and automation for consistency
+- **Least privilege:** Default deny with explicit allow
+- **Defense in depth:** Multiple layers of controls
+- **Continuous improvement:** Regular review and refinement
+
+---
+
+## Resources
+
+- [NIST 800-53 Control Catalog](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
+- [ISO 27001:2022](https://www.iso.org/standard/27001)
+- [Cyber Essentials Scheme](https://www.ncsc.gov.uk/cyberessentials/overview)
+- [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks)
+- [GDPR Official Text](https://gdpr-info.eu/)

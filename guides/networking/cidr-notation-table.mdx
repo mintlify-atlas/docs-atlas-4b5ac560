@@ -1,0 +1,188 @@
+---
+title: 'IPv4 CIDR Reference Table'
+description: 'Complete IPv4 CIDR notation reference with subnet masks and usable hosts'
+icon: 'table'
+---
+
+This table provides a complete reference for IPv4 CIDR notation, including subnet masks, total IP addresses, and usable hosts.
+
+---
+
+## CIDR Reference Table
+
+| Bits | Prefix | Subnet Mask | IP Addresses | Usable Hosts |
+|:----:|:------:|:------------|-------------:|-------------:|
+| 0 | /32 | 255.255.255.255 | 1 | N/A |
+| 1 | /31 | 255.255.255.254 | 2 | 2 |
+| 2 | /30 | 255.255.255.252 | 4 | 2 |
+| 3 | /29 | 255.255.255.248 | 8 | 6 |
+| 4 | /28 | 255.255.255.240 | 16 | 14 |
+| 5 | /27 | 255.255.255.224 | 32 | 30 |
+| 6 | /26 | 255.255.255.192 | 64 | 62 |
+| 7 | /25 | 255.255.255.128 | 128 | 126 |
+| 8 | /24 | 255.255.255.0 | 256 | 254 |
+| 9 | /23 | 255.255.254.0 | 512 | 510 |
+| 10 | /22 | 255.255.252.0 | 1 K | 1,022 |
+| 11 | /21 | 255.255.248.0 | 2 K | 2,046 |
+| 12 | /20 | 255.255.240.0 | 4 K | 4,094 |
+| 13 | /19 | 255.255.224.0 | 8 K | 8,190 |
+| 14 | /18 | 255.255.192.0 | 16 K | 16,382 |
+| 15 | /17 | 255.255.128.0 | 32 K | 32,766 |
+| 16 | /16 | 255.255.0.0 | 64 K | 65,534 |
+| 17 | /15 | 255.254.0.0 | 128 K | 131,070 |
+| 18 | /14 | 255.252.0.0 | 256 K | 262,142 |
+| 19 | /13 | 255.248.0.0 | 512 K | 524,286 |
+| 20 | /12 | 255.240.0.0 | 1 M | 1,048,574 |
+| 21 | /11 | 255.224.0.0 | 2 M | 2,097,150 |
+| 22 | /10 | 255.192.0.0 | 4 M | 4,194,302 |
+| 23 | /9 | 255.128.0.0 | 8 M | 8,388,606 |
+| 24 | /8 | 255.0.0.0 | 16 M | 16,777,214 |
+| 25 | /7 | 254.0.0.0 | 32 M | 33,554,430 |
+| 26 | /6 | 252.0.0.0 | 64 M | 67,108,862 |
+| 27 | /5 | 248.0.0.0 | 128 M | 134,217,726 |
+| 28 | /4 | 240.0.0.0 | 256 M | 268,435,454 |
+| 29 | /3 | 224.0.0.0 | 512 M | 536,870,910 |
+| 30 | /2 | 192.0.0.0 | 1,024 M | 1,073,741,822 |
+| 31 | /1 | 128.0.0.0 | 2,048 M | 2,147,483,646 |
+| 32 | /0 | 0.0.0.0 | 4,096 M | 4,294,967,294 |
+
+<Note>
+**K** = 1,024 and **M** = 1,048,576 (binary multiples)
+</Note>
+
+---
+
+## Common Subnet Sizes
+
+<CardGroup cols={3}>
+  <Card title="/24 Network" icon="network-wired">
+    **256 IPs, 254 usable**
+    
+    Most common for small LANs
+  </Card>
+  
+  <Card title="/30 Network" icon="link">
+    **4 IPs, 2 usable**
+    
+    Point-to-point links
+  </Card>
+  
+  <Card title="/16 Network" icon="building">
+    **65,536 IPs, 65,534 usable**
+    
+    Large enterprise or AWS VPC
+  </Card>
+</CardGroup>
+
+---
+
+## Formula for Usable Hosts
+
+**Usable Hosts = 2<sup>n</sup> - 2**
+
+Where:
+- **n** = number of host bits
+- The **-2** accounts for the **network** and **broadcast** addresses
+
+### Example Calculation
+
+For a **/24** network:
+- Host bits = 32 - 24 = 8
+- Total IPs = 2<sup>8</sup> = 256
+- Usable hosts = 256 - 2 = **254**
+
+---
+
+## Practical Examples
+
+<Tabs>
+  <Tab title="Small Office">
+    **Network:** 192.168.1.0/24
+    
+    - **Subnet Mask:** 255.255.255.0
+    - **Network Address:** 192.168.1.0
+    - **First Usable:** 192.168.1.1
+    - **Last Usable:** 192.168.1.254
+    - **Broadcast:** 192.168.1.255
+    - **Usable Hosts:** 254
+  </Tab>
+  
+  <Tab title="Point-to-Point Link">
+    **Network:** 10.0.0.0/30
+    
+    - **Subnet Mask:** 255.255.255.252
+    - **Network Address:** 10.0.0.0
+    - **First Usable:** 10.0.0.1
+    - **Last Usable:** 10.0.0.2
+    - **Broadcast:** 10.0.0.3
+    - **Usable Hosts:** 2
+  </Tab>
+  
+  <Tab title="AWS VPC">
+    **Network:** 10.0.0.0/16
+    
+    - **Subnet Mask:** 255.255.0.0
+    - **Network Address:** 10.0.0.0
+    - **First Usable:** 10.0.0.1
+    - **Last Usable:** 10.0.255.254
+    - **Broadcast:** 10.0.255.255
+    - **Usable Hosts:** 65,534
+  </Tab>
+</Tabs>
+
+---
+
+## Quick Reference Guide
+
+<Accordion title="Most Common CIDR Blocks">
+  - **/32** - Single host (1 IP)
+  - **/31** - Point-to-point link (2 IPs, RFC 3021)
+  - **/30** - Point-to-point link (2 usable IPs)
+  - **/29** - Small subnet (6 usable IPs)
+  - **/28** - Small subnet (14 usable IPs)
+  - **/27** - Small subnet (30 usable IPs)
+  - **/26** - Medium subnet (62 usable IPs)
+  - **/25** - Medium subnet (126 usable IPs)
+  - **/24** - Standard LAN (254 usable IPs)
+  - **/23** - Medium LAN (510 usable IPs)
+  - **/22** - Large LAN (1,022 usable IPs)
+  - **/21** - Very large LAN (2,046 usable IPs)
+  - **/20** - Small enterprise (4,094 usable IPs)
+  - **/16** - Large enterprise/VPC (65,534 usable IPs)
+  - **/8** - Class A network (16,777,214 usable IPs)
+</Accordion>
+
+<Accordion title="AWS VPC CIDR Recommendations">
+  AWS allows VPC CIDR blocks between **/16** and **/28**:
+  
+  - **/16** - Maximum size VPC (65,536 IPs)
+  - **/20** - Medium VPC (4,096 IPs)
+  - **/24** - Small VPC (256 IPs)
+  - **/28** - Minimum size VPC (16 IPs)
+  
+  <Tip>
+  AWS reserves the first 4 IPs and the last IP in each subnet.
+  </Tip>
+</Accordion>
+
+---
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card
+    title="VLSM Calculator"
+    icon="calculator"
+    href="/guides/networking/vlsm-calculator"
+  >
+    Variable-Length Subnet Masking calculator
+  </Card>
+  
+  <Card
+    title="VPC Basics"
+    icon="aws"
+    href="/guides/networking/vpc-basics"
+  >
+    Learn about AWS VPC subnetting
+  </Card>
+</CardGroup>

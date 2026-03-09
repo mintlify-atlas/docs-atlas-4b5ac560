@@ -1,80 +1,242 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart Guide
+description: Learn how to navigate the safesploitOrg documentation, find what you need quickly, and make the most of the knowledge hub.
 ---
 
-## Get started in three steps
+# Quickstart Guide
 
-Get your documentation site running locally and make your first customization.
+This guide will help you navigate the safesploitOrg documentation effectively and find the information you need quickly.
 
-### Step 1: Set up your local environment
+## How to Navigate the Documentation
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
+  <Step title="Identify Your Goal">
+    Determine what you're trying to accomplish:
+    - **Learning a new skill?** → Start with [Guides](/guides/overview)
+    - **Implementing something properly?** → Check [Best Practices](/best-practices/overview)
+    - **Understanding a production incident?** → Review [Case Studies](/case-studies/overview)
+    - **Meeting compliance requirements?** → Explore [Compliance](/compliance/overview)
+    - **Quick command reference?** → Jump to [Cheatsheets](/cheatsheets/overview)
+  </Step>
+  
+  <Step title="Use the Search Function">
+    The documentation search is your fastest path to specific information:
+    - Search for specific technologies (e.g., "nftables", "LVM", "AWS VPC")
+    - Search for concepts (e.g., "VLAN trunking", "zero-trust", "secrets management")
+    - Search for compliance frameworks (e.g., "NIST 800-53", "Cyber Essentials+")
+  </Step>
+  
+  <Step title="Browse by Category">
+    Use the sidebar navigation to explore content by category:
+    - **Best Practices** — Organized by domain (Linux, Networking, Cloud & DevOps, Security)
+    - **Guides** — Grouped by technology area with step-by-step instructions
+    - **Case Studies** — Sorted chronologically by incident date
+    - **Compliance** — Structured by framework and regulatory requirement
+  </Step>
+  
+  <Step title="Follow Cross-References">
+    Documentation pages link to related content:
+    - Follow inline links to dive deeper into specific topics
+    - Check "Related" sections at the end of pages
+    - Use breadcrumbs to navigate back to parent sections
+  </Step>
+</Steps>
 
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
+## Quick Links to Popular Content
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Linux Best Practices" icon="linux" href="/best-practices/linux/overview">
+    Hardening, storage management, firewall configuration, and system observability
+  </Card>
+  
+  <Card title="Networking Guides" icon="network-wired" href="/guides/networking/overview">
+    VLAN trunking, CIDR notation, routing protocols (OSPF, BGP), and AWS VPC basics
+  </Card>
+  
+  <Card title="Storage Management" icon="hard-drive" href="/best-practices/linux/storage/lvm">
+    LVM operations, Ceph networking, online resizing, and troubleshooting
+  </Card>
+  
+  <Card title="Security Frameworks" icon="shield-halved" href="/compliance/overview">
+    NIST 800-53, ISO 27001, Cyber Essentials+, and CIS Benchmarks
+  </Card>
 </CardGroup>
 
+<CardGroup cols={2}>
+  <Card title="AWS Incident Analysis" icon="aws" href="/case-studies/aws/2025-10-20">
+    DNS bug in US-EAST-1 causing global DynamoDB endpoint failure
+  </Card>
+  
+  <Card title="Azure Outage Study" icon="microsoft" href="/case-studies/azure/2025-10-29">
+    Azure Front Door / CDN routing failure across multiple regions
+  </Card>
+  
+  <Card title="Cloudflare Post-Mortem" icon="cloud" href="/case-studies/cloudflare/2025-11-18">
+    Global outage from malformed bot-management configuration
+  </Card>
+  
+  <Card title="Password Security" icon="key" href="/guides/passwords/strong-memorable-passwords">
+    Creating strong, memorable passwords without password managers
+  </Card>
+</CardGroup>
+
+## Finding Specific Content Types
+
+### Guides (How-To)
+
+Guides provide step-by-step instructions for specific tasks:
+
+- **Linux Administration** — RHEL9 nftables migration, system configuration
+- **Networking** — Subnetting with VLSM, route tables, VLAN configuration
+- **Cloud & DevOps** — AWS VPC setup, routing strategies
+- **Security** — Password creation, authentication hardening
+
+<Tip>
+  Guides include code examples and command snippets you can copy and adapt for your environment.
+</Tip>
+
+### Best Practices (Why & When)
+
+Best practices explain the reasoning behind technical decisions:
+
+- **Linux** — Firewall rule management, storage configuration, observability patterns
+- **Networking** — Secure network segmentation, VLAN design, VPN setup
+- **Cloud & DevOps** — Infrastructure as Code, CI/CD security, container hardening
+- **Security** — Secrets management, MFA enforcement, audit logging
+- **Documentation** — Runbook writing, disaster recovery planning
+
+<Info>
+  Best practices combine technical implementation with operational context and security considerations.
+</Info>
+
+### Case Studies (Learn from Incidents)
+
+Case studies analyze real-world outages and incidents:
+
+- **Executive summaries** for quick understanding
+- **Technical root cause analysis** with diagrams
+- **Timelines** showing how incidents unfolded
+- **Impact assessments** on services and users
+- **Lessons learned** for DevOps, DevSecOps, and SRE teams
+- **Architecture diagrams** illustrating failure modes
+
+<Warning>
+  Case studies are based on public incident reports and are sanitized to focus on learning opportunities rather than blame.
+</Warning>
+
+### Compliance Documentation
+
+Compliance resources help align your infrastructure with industry standards:
+
+- **Standards & Frameworks** — NIST 800-53, ISO 27001, CIS Benchmarks
+- **Policies** — Access controls, backup policies, operational standards
+- **Audits & Checklists** — Self-assessment templates and readiness guides
+- **Regulatory** — GDPR, HIPAA, Cyber Essentials+ requirements
+
+### Cheatsheets (Quick Reference)
+
+Cheatsheets provide concise command references:
+
+- **AWK** — Text processing and data extraction patterns
+- **PowerShell** — Common cmdlets and scripting patterns
+- More tools being added continuously
+
+## Tips for Using the Documentation Effectively
+
+### 1. Start Broad, Then Narrow
+
+Begin with overview pages (like `/guides/overview` or `/best-practices/overview`) to understand the landscape, then drill down into specific topics.
+
+### 2. Cross-Reference Related Topics
+
+Many topics span multiple sections. For example:
+- **Firewall configuration** appears in both Guides (how-to) and Best Practices (principles)
+- **Storage management** includes Linux guides, best practices, and troubleshooting
+
+### 3. Learn from Real Incidents
+
+Case studies provide context for why certain practices matter:
+- Read about AWS US-EAST-1 outages to understand DNS dependency risks
+- Study Azure CDN failures to learn about routing resilience
+- Analyze Cloudflare incidents to see configuration management importance
+
+### 4. Bookmark Key References
+
+Create bookmarks for pages you reference frequently:
+- CIDR notation tables
+- Compliance checklists
+- Command cheatsheets
+- Architecture decision records
+
+### 5. Understand the "Why" Not Just the "How"
+
+The documentation emphasizes reasoning behind decisions:
+- Why use nftables over iptables?
+- Why implement specific VLAN segmentation?
+- Why certain compliance controls matter?
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Understanding the "why" helps you adapt practices to your specific context rather than blindly following instructions.
 </Note>
+
+## Documentation Structure Overview
+
+```txt
+safesploitOrg/docs/
+├── architecture/       # High-level system designs
+├── best-practices/    # Recommended patterns by domain
+├── case-studies/      # Incident analysis and lessons
+├── cheatsheets/       # Quick reference guides
+├── compliance/        # Security frameworks and standards
+├── guides/            # Step-by-step how-tos
+├── repo/              # Per-repository documentation
+└── templates/         # Reusable documentation templates
+```
+
+## Content Organization Principles
+
+<CardGroup cols={2}>
+  <Card title="By Domain" icon="folder-tree">
+    Content is organized by technical domain (Linux, Networking, Cloud, Security) making it easy to find related information.
+  </Card>
+  
+  <Card title="By Use Case" icon="list-check">
+    Multiple entry points exist for the same content — find information by what you're trying to accomplish.
+  </Card>
+  
+  <Card title="Cross-Linked" icon="link">
+    Heavy use of internal links connects related concepts and creates learning paths through the documentation.
+  </Card>
+  
+  <Card title="Public-Safe" icon="eye">
+    All content is sanitized to share knowledge without exposing sensitive implementation details or credentials.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+Now that you understand how to navigate:
+
+<CardGroup cols={2}>
+  <Card title="Explore Best Practices" icon="star" href="/best-practices/overview">
+    Start with foundational practices in Linux and systems, then expand to cloud and DevOps.
+  </Card>
+  
+  <Card title="Read a Guide" icon="book" href="/guides/overview">
+    Pick a technical guide that matches your current learning goals or project needs.
+  </Card>
+  
+  <Card title="Study an Incident" icon="triangle-exclamation" href="/case-studies/overview">
+    Learn from real-world outages at major cloud providers and what they teach us.
+  </Card>
+  
+  <Card title="Check Compliance" icon="clipboard-check" href="/compliance/overview">
+    Review security frameworks and regulatory requirements relevant to your environment.
+  </Card>
+</CardGroup>
+
+---
+
+<Tip>
+  **Pro tip:** Use the documentation search with specific keywords like technology names, error messages, or compliance control numbers for fastest results.
+</Tip>

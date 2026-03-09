@@ -1,0 +1,267 @@
+---
+title: 'AWS VPC Basics'
+description: 'Understanding Amazon Virtual Private Clouds, subnets, and core networking components'
+icon: 'aws'
+---
+
+An **Amazon Virtual Private Cloud (VPC)** is a logically isolated section of the AWS cloud where you can launch AWS resources in a custom IP network that you define.
+
+It behaves like an on-premises data centre network, giving full control over IP addressing, subnetting, routing, firewalls, and connectivity.
+
+---
+
+## Core VPC Components
+
+| Component | Description |
+|:----------|:------------|
+| **VPC** | The root container for all AWS networking resources |
+| **Subnet** | Logical segmentation within a VPC (public or private) |
+| **Route Table** | Defines how traffic is directed within or outside the VPC |
+| **Internet Gateway (IGW)** | Enables Internet access for public subnets |
+| **NAT Gateway (NATGW)** | Enables private subnets to initiate outbound traffic securely |
+| **Network ACL (NACL)** | Stateless packet filter applied at subnet level |
+| **Security Group (SG)** | Stateful firewall applied to instances/ENIs |
+| **VPC Peering / Transit Gateway** | Connects multiple VPCs or hybrid networks |
+
+---
+
+## Default vs Custom VPCs
+
+<Tabs>
+  <Tab title="Default VPC">
+    **Automatically created per region**
+    
+    - One public subnet per AZ
+    - Internet access enabled
+    - Auto-created security group and route table
+    - Good for testing or quick labs
+    
+    <Warning>
+    Not recommended for production environments
+    </Warning>
+  </Tab>
+  
+  <Tab title="Custom VPC">
+    **Manually defined for fine-grained control**
+    
+    - Choose your own CIDR range
+    - Define subnets and route tables
+    - Configure gateways and security boundaries
+    - Full control over network architecture
+    
+    <Tip>
+    Best practice: Create and manage Custom VPCs for production workloads
+    </Tip>
+  </Tab>
+</Tabs>
+
+---
+
+## VPC CIDR and Subnetting
+
+Each VPC is assigned an **IPv4 CIDR block** (and optionally IPv6). AWS allows between **/16 and /28** for the VPC's CIDR range.
+
+### Example Architecture
+
+```
+VPC CIDR: 10.0.0.0/16
+Subnet-A: 10.0.1.0/24 (Public)
+Subnet-B: 10.0.2.0/24 (Private)
+Subnet-C: 10.0.3.0/24 (Private)
+```
+
+| Subnet | CIDR | AZ | Type | Route Table | Internet Access |
+|:-------|:-----|:---|:-----|:------------|:----------------|
+| Public-A | 10.0.1.0/24 | eu-west-2a | Public | Public RT | ✅ |
+| Private-A | 10.0.2.0/24 | eu-west-2a | Private | Private RT | ❌ |
+| Private-B | 10.0.3.0/24 | eu-west-2b | Private | Private RT | ❌ |
+
+<Note>
+Each subnet resides entirely within one Availability Zone.
+</Note>
+
+---
+
+## VPC Architecture Overview
+
+```
+                 +-----------------------------+
+                 |         AWS Cloud           |
+                 |   VPC: 10.0.0.0/16          |
+                 |                             |
+     +-----------+-----------------------------+-----------+
+     | Public Subnet (10.0.1.0/24)                         |
+     |  EC2 (Web)  -->  IGW (Internet Gateway)             |
+     +------------------------------------------------------+
+     | Private Subnet (10.0.2.0/24)                        |
+     |  EC2 (App/DB) --> NATGW (Outbound only)             |
+     +------------------------------------------------------+
+```
+
+<CardGroup cols={2}>
+  <Card title="Public Subnet" icon="globe">
+    Contains resources needing Internet access (e.g. bastion hosts, web servers)
+  </Card>
+  
+  <Card title="Private Subnet" icon="lock">
+    Isolated, no direct inbound access (e.g. databases, backend apps)
+  </Card>
+  
+  <Card title="NAT Gateway" icon="arrow-right-arrow-left">
+    Allows outbound Internet access from private subnets
+  </Card>
+  
+  <Card title="Internet Gateway" icon="wifi">
+    Allows inbound/outbound Internet for public subnets
+  </Card>
+</CardGroup>
+
+---
+
+## Route Table Behaviour
+
+| Destination | Target | Description |
+|:------------|:-------|:------------|
+| `10.0.0.0/16` | local | Enables internal VPC communication |
+| `0.0.0.0/0` | igw-xxxxxx | Internet access for public subnets |
+| `0.0.0.0/0` | nat-xxxxxx | Outbound Internet via NATGW for private subnets |
+
+<Info>
+Each subnet can be associated with only **one route table**, but a route table can be associated with **multiple subnets**.
+</Info>
+
+---
+
+## Security Model: NACL vs Security Groups
+
+| Feature | Network ACL (NACL) | Security Group (SG) |
+|:--------|:-------------------|:--------------------|
+| **Type** | Stateless | Stateful |
+| **Scope** | Subnet-level | Instance/ENI-level |
+| **Rules Evaluated** | Inbound + Outbound | Inbound + Outbound |
+| **Default Behaviour** | Deny all (custom) / Allow all (default) | Deny all inbound, allow all outbound |
+| **Use Case** | Granular subnet filtering | Instance-level firewalling |
+
+---
+
+## Common AWS CLI Commands
+
+<Tabs>
+  <Tab title="VPC Management">
+    ```bash
+    # List all VPCs
+    aws ec2 describe-vpcs
+    
+    # Create a new VPC
+    aws ec2 create-vpc --cidr-block 10.0.0.0/16
+    ```
+  </Tab>
+  
+  <Tab title="Subnet Management">
+    ```bash
+    # Show subnet details
+    aws ec2 describe-subnets
+    
+    # Create subnet
+    aws ec2 create-subnet --vpc-id vpc-xxxx --cidr-block 10.0.1.0/24
+    ```
+  </Tab>
+  
+  <Tab title="Route Tables">
+    ```bash
+    # List route tables
+    aws ec2 describe-route-tables
+    ```
+  </Tab>
+  
+  <Tab title="Security Groups">
+    ```bash
+    # List security groups
+    aws ec2 describe-security-groups
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Lab Exercise
+
+<Steps>
+  <Step title="Create Custom VPC">
+    Create a custom VPC with CIDR `10.0.0.0/16`
+  </Step>
+  
+  <Step title="Create Subnets">
+    Create two subnets:
+    - `10.0.1.0/24` (public)
+    - `10.0.2.0/24` (private)
+  </Step>
+  
+  <Step title="Attach Gateways">
+    Attach an Internet Gateway and create a NAT Gateway
+  </Step>
+  
+  <Step title="Configure Route Tables">
+    Create route tables for public and private subnets:
+    - Public → IGW for Internet
+    - Private → NAT Gateway for outbound Internet
+  </Step>
+  
+  <Step title="Test Connectivity">
+    Launch EC2 instances in each subnet and verify:
+    - Public EC2 → Internet ✅
+    - Private EC2 → Internet via NAT ✅
+    - Private EC2 → Direct inbound ❌
+  </Step>
+</Steps>
+
+---
+
+## Integration with On-Prem / Multi-VPC
+
+AWS supports multiple interconnect options:
+
+| Connection Type | Description | Routing Type |
+|:----------------|:------------|:-------------|
+| **VPC Peering** | Point-to-point connection between VPCs | Static routes |
+| **Transit Gateway (TGW)** | Central hub for multi-VPC or hybrid connectivity | Dynamic (BGP optional) |
+| **VPN / Direct Connect** | Connect on-premises networks | Static or BGP dynamic routing |
+
+---
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Custom VPCs" icon="check">
+    Disable default VPCs in production environments
+  </Card>
+  
+  <Card title="Restrict Security Groups" icon="shield">
+    Change default security groups — restrict inbound access
+  </Card>
+  
+  <Card title="Separate Environments" icon="layer-group">
+    Separate Prod/Dev/Test into different VPCs
+  </Card>
+  
+  <Card title="Least Privilege" icon="lock">
+    Enforce least privilege routing and network isolation
+  </Card>
+  
+  <Card title="Enable Flow Logs" icon="chart-line">
+    Use VPC Flow Logs for visibility and auditing
+  </Card>
+  
+  <Card title="Tag Resources" icon="tag">
+    Tag all network components consistently
+  </Card>
+</CardGroup>
+
+---
+
+## Further Reading
+
+- [AWS VPC Documentation](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+- [AWS Subnetting Guide](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html)
+- [AWS NAT Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)
+- [AWS Transit Gateway Overview](https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html)

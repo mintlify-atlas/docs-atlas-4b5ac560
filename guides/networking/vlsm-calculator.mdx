@@ -1,0 +1,291 @@
+---
+title: 'VLSM Calculator'
+description: 'Variable-Length Subnet Masking resources and calculator'
+icon: 'calculator'
+---
+
+**VLSM (Variable-Length Subnet Masking)** allows you to subnet a network into different sized subnets based on the number of hosts required for each subnet.
+
+This is more efficient than traditional fixed-length subnetting and is essential for network design and IP address conservation.
+
+---
+
+## VLSM Calculator Tool
+
+<Card
+  title="VLSM Calculator"
+  icon="calculator"
+  href="https://vlsm.git.safesploit.com/"
+>
+  Click here to access the interactive VLSM calculator tool
+</Card>
+
+<Info>
+The VLSM calculator helps you design efficient subnet allocations based on your host requirements.
+</Info>
+
+---
+
+## What is VLSM?
+
+VLSM (Variable-Length Subnet Masking) is a subnet design technique that allows you to:
+
+- **Allocate different subnet sizes** based on actual requirements
+- **Minimize IP address waste** by using appropriately sized subnets
+- **Design hierarchical networks** with efficient address allocation
+- **Support route summarization** for better routing efficiency
+
+---
+
+## VLSM vs Traditional Subnetting
+
+<Tabs>
+  <Tab title="Traditional (Fixed-Length)">
+    **All subnets are the same size**
+    
+    Example: 10.0.0.0/24 divided into 4 subnets:
+    - 10.0.0.0/26 (62 hosts)
+    - 10.0.0.64/26 (62 hosts)
+    - 10.0.0.128/26 (62 hosts)
+    - 10.0.0.192/26 (62 hosts)
+    
+    <Warning>
+    **Problem:** If you only need 10 hosts in one subnet and 50 in another, you waste 52 IPs in the first subnet.
+    </Warning>
+  </Tab>
+  
+  <Tab title="VLSM (Variable-Length)">
+    **Subnets sized based on requirements**
+    
+    Example: 10.0.0.0/24 with varying needs:
+    - 10.0.0.0/26 (62 hosts) - for 50 hosts
+    - 10.0.0.64/28 (14 hosts) - for 10 hosts
+    - 10.0.0.80/28 (14 hosts) - for 10 hosts
+    - 10.0.0.96/27 (30 hosts) - for 25 hosts
+    
+    <Tip>
+    **Benefit:** Efficient IP allocation with minimal waste.
+    </Tip>
+  </Tab>
+</Tabs>
+
+---
+
+## VLSM Design Process
+
+<Steps>
+  <Step title="List Requirements">
+    List all subnets and their host requirements in **descending order** (largest first)
+  </Step>
+  
+  <Step title="Allocate Largest First">
+    Start with the largest subnet requirement and allocate appropriately sized CIDR block
+  </Step>
+  
+  <Step title="Continue Sequentially">
+    Move to the next largest requirement and allocate the next available block
+  </Step>
+  
+  <Step title="Verify No Overlap">
+    Ensure no subnet ranges overlap
+  </Step>
+  
+  <Step title="Document Allocation">
+    Document all allocations for future reference
+  </Step>
+</Steps>
+
+---
+
+## Example VLSM Design
+
+### Network Requirements
+
+You have network **192.168.1.0/24** and need:
+- Subnet A: 100 hosts
+- Subnet B: 50 hosts
+- Subnet C: 25 hosts
+- Subnet D: 10 hosts
+- 2 point-to-point links: 2 hosts each
+
+### VLSM Allocation
+
+| Subnet | Hosts Needed | Hosts Available | CIDR | Range |
+|:-------|-------------:|----------------:|:-----|:------|
+| Subnet A | 100 | 126 | /25 | 192.168.1.0 - 192.168.1.127 |
+| Subnet B | 50 | 62 | /26 | 192.168.1.128 - 192.168.1.191 |
+| Subnet C | 25 | 30 | /27 | 192.168.1.192 - 192.168.1.223 |
+| Subnet D | 10 | 14 | /28 | 192.168.1.224 - 192.168.1.239 |
+| Link 1 | 2 | 2 | /30 | 192.168.1.240 - 192.168.1.243 |
+| Link 2 | 2 | 2 | /30 | 192.168.1.244 - 192.168.1.247 |
+
+<Note>
+Remaining address space: 192.168.1.248 - 192.168.1.255 (available for future use)
+</Note>
+
+---
+
+## VLSM Subnet Size Quick Reference
+
+<Accordion title="Common Subnet Sizes">
+  | Hosts Needed | Use This CIDR | Usable Hosts |
+  |-------------:|:--------------|-------------:|
+  | 2 | /30 | 2 |
+  | 6 | /29 | 6 |
+  | 14 | /28 | 14 |
+  | 30 | /27 | 30 |
+  | 62 | /26 | 62 |
+  | 126 | /25 | 126 |
+  | 254 | /24 | 254 |
+  | 510 | /23 | 510 |
+  | 1,022 | /22 | 1,022 |
+  | 2,046 | /21 | 2,046 |
+  | 4,094 | /20 | 4,094 |
+</Accordion>
+
+---
+
+## Benefits of VLSM
+
+<CardGroup cols={2}>
+  <Card title="IP Efficiency" icon="coins">
+    Minimizes IP address waste by allocating appropriate subnet sizes
+  </Card>
+  
+  <Card title="Scalability" icon="up-right-and-down-left-from-center">
+    Supports hierarchical network design and growth
+  </Card>
+  
+  <Card title="Route Summarization" icon="compress">
+    Enables efficient route summarization (supernetting)
+  </Card>
+  
+  <Card title="Flexibility" icon="wand-magic-sparkles">
+    Adapts to varying host requirements per subnet
+  </Card>
+</CardGroup>
+
+---
+
+## VLSM in Cloud Environments
+
+### AWS VPC Example
+
+```
+VPC: 10.0.0.0/16
+
+├─ Public Subnets (web servers - 250 hosts each)
+│  ├─ 10.0.0.0/24 (AZ-A)
+│  └─ 10.0.1.0/24 (AZ-B)
+│
+├─ Private Subnets (app servers - 500 hosts each)
+│  ├─ 10.0.2.0/23 (AZ-A)
+│  └─ 10.0.4.0/23 (AZ-B)
+│
+├─ Database Subnets (databases - 60 hosts each)
+│  ├─ 10.0.6.0/26 (AZ-A)
+│  └─ 10.0.6.64/26 (AZ-B)
+│
+└─ Management Subnet (bastion - 10 hosts)
+   └─ 10.0.6.128/28
+```
+
+<Tip>
+AWS reserves 5 IPs per subnet (first 4 and last 1), so plan accordingly.
+</Tip>
+
+---
+
+## VLSM Best Practices
+
+<Steps>
+  <Step title="Plan Ahead">
+    Always plan for growth - allocate 30-50% more hosts than currently needed
+  </Step>
+  
+  <Step title="Sort by Size">
+    Allocate subnets in descending order (largest first) to minimize waste
+  </Step>
+  
+  <Step title="Document Everything">
+    Maintain detailed documentation of all subnet allocations
+  </Step>
+  
+  <Step title="Use Private Ranges">
+    Use RFC 1918 private address spaces (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+  </Step>
+  
+  <Step title="Plan for Summarization">
+    Design with route summarization in mind for efficient routing
+  </Step>
+</Steps>
+
+---
+
+## VLSM Lab Exercise
+
+<Accordion title="Lab: Design a VLSM Network">
+  **Scenario:** You have network 172.16.0.0/16 and need to create subnets for:
+  
+  1. Head Office LAN: 500 hosts
+  2. Branch Office 1: 200 hosts
+  3. Branch Office 2: 100 hosts
+  4. Branch Office 3: 50 hosts
+  5. DMZ Network: 30 hosts
+  6. Management Network: 10 hosts
+  7. Three WAN links: 2 hosts each
+  
+  **Your Task:**
+  - Design VLSM allocation
+  - Calculate subnet masks
+  - Determine IP ranges
+  - Document network and broadcast addresses
+  
+  Use the [VLSM Calculator](https://vlsm.git.safesploit.com/) to verify your design.
+</Accordion>
+
+---
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card
+    title="CIDR Reference Table"
+    icon="table"
+    href="/guides/networking/cidr-notation-table"
+  >
+    Complete CIDR notation reference
+  </Card>
+  
+  <Card
+    title="VPC Subnetting"
+    icon="aws"
+    href="/guides/networking/vpc-basics"
+  >
+    Learn about AWS VPC subnet design
+  </Card>
+  
+  <Card
+    title="VLSM Calculator Tool"
+    icon="calculator"
+    href="https://vlsm.git.safesploit.com/"
+  >
+    Interactive VLSM calculator
+  </Card>
+  
+  <Card
+    title="Route Tables"
+    icon="signs-post"
+    href="/guides/networking/route-tables"
+  >
+    Understanding routing with VLSM
+  </Card>
+</CardGroup>
+
+---
+
+## Further Reading
+
+- [RFC 1918 - Address Allocation for Private Internets](https://datatracker.ietf.org/doc/html/rfc1918)
+- [RFC 4632 - Classless Inter-domain Routing (CIDR)](https://datatracker.ietf.org/doc/html/rfc4632)
+- [Cisco VLSM Documentation](https://www.cisco.com/c/en/us/support/docs/ip/routing-information-protocol-rip/13788-3.html)

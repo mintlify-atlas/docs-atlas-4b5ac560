@@ -1,0 +1,243 @@
+---
+title: 'AWS VPC Route Tables'
+description: 'Understanding how routing works in AWS VPCs and route table configuration'
+icon: 'signs-post'
+---
+
+AWS **Route Tables** define how network traffic is directed within and outside a **Virtual Private Cloud (VPC)**.
+
+They determine where packets go based on their destination IP address — similar to routing tables in traditional networks or routers.
+
+---
+
+## Key Concepts
+
+| Term | Description |
+|:-----|:------------|
+| **VPC** | Virtual Private Cloud — logically isolated section of AWS network |
+| **Route Table** | A set of rules (routes) that determine where traffic for a subnet is directed |
+| **Subnet Association** | Each subnet must be explicitly or implicitly associated with a route table |
+| **Main Route Table** | The default route table automatically associated with all subnets unless overridden |
+| **Custom Route Table** | Manually created route table for specific subnets or routing domains |
+| **Target** | The next hop for a route (e.g. Internet Gateway, NAT Gateway, Transit Gateway) |
+
+---
+
+## How Routing Works in AWS
+
+<Steps>
+  <Step title="Identify Source Subnet">
+    When an instance sends a packet, AWS identifies which subnet the instance belongs to
+  </Step>
+  
+  <Step title="Check Route Table">
+    AWS checks which route table is associated with that subnet
+  </Step>
+  
+  <Step title="Match Destination">
+    AWS finds which route in the table matches the destination CIDR
+  </Step>
+  
+  <Step title="Forward to Target">
+    AWS forwards the packet to the appropriate target (IGW, NATGW, TGW, ENI)
+  </Step>
+</Steps>
+
+---
+
+## Example: Default Route Table
+
+| Destination | Target | Purpose |
+|:------------|:-------|:--------|
+| `10.0.0.0/16` | `local` | Routes traffic within the VPC (always present) |
+
+<Info>
+Every VPC has an implicit **local route** that enables internal communication between subnets.
+</Info>
+
+---
+
+## Example Route Tables
+
+<Tabs>
+  <Tab title="Public Subnet">
+    ```plaintext
+    Destination        Target              Description
+    ---------------------------------------------------------
+    10.0.0.0/16        local               Intra-VPC routing
+    0.0.0.0/0          igw-0abc12345       Internet access via IGW
+    ```
+    
+    **Explanation:**
+    - `local` allows private communication within the VPC
+    - `0.0.0.0/0` sends all non-local traffic to the Internet Gateway
+    - Subnets associated with this table become **public subnets**
+  </Tab>
+  
+  <Tab title="Private Subnet">
+    ```plaintext
+    Destination        Target              Description
+    ---------------------------------------------------------
+    10.0.0.0/16        local               Intra-VPC routing
+    0.0.0.0/0          nat-0def6789        Outbound Internet via NAT Gateway
+    ```
+    
+    **Explanation:**
+    - No direct Internet Gateway route
+    - Instances can **initiate** outbound connections but cannot be reached from the Internet
+    - Subnets associated with this table are **private**
+  </Tab>
+  
+  <Tab title="Hybrid / VPN">
+    ```plaintext
+    Destination        Target              Description
+    ---------------------------------------------------------
+    10.0.0.0/16        local               VPC internal routes
+    172.16.0.0/12      vgw-0aa123bb        VPN connection to on-prem
+    0.0.0.0/0          nat-0def6789        Internet access (via NATGW)
+    ```
+    
+    **Notes:**
+    - The **VGW (Virtual Private Gateway)** enables BGP route propagation from on-prem
+    - Routes from VPNs or Direct Connect links can appear automatically when **route propagation** is enabled
+  </Tab>
+</Tabs>
+
+---
+
+## Peering & Transit Gateway Routes
+
+| Scenario | Route Example | Target | Purpose |
+|:---------|:--------------|:-------|:--------|
+| **VPC Peering** | `10.2.0.0/16` | `pcx-0abc9fgh` | Enables routing to peer VPC |
+| **Transit Gateway (TGW)** | `10.3.0.0/16` | `tgw-0xyz1234` | Central routing hub for multi-VPC or hybrid networks |
+| **Direct Connect** | `172.31.0.0/16` | `dxvif-0de12345` | Private connection to on-premises environment |
+
+<Warning>
+Always ensure both sides of the peering or TGW connection have **reciprocal routes** configured.
+</Warning>
+
+---
+
+## Route Propagation
+
+AWS can automatically propagate routes from:
+- **VPN connections**
+- **Direct Connect gateways**
+- **Transit Gateways**
+
+### Enable Route Propagation
+
+```bash
+aws ec2 enable-vgw-route-propagation \
+  --gateway-id vgw-0aa123bb \
+  --route-table-id rtb-0ff56789
+```
+
+---
+
+## Subnet Types and Route Tables
+
+| Subnet | CIDR | Route Table | Internet Access | Description |
+|:-------|:-----|:------------|:----------------|:------------|
+| `Public-A` | 10.0.1.0/24 | `rtb-public` | ✅ | Internet via IGW |
+| `Private-A` | 10.0.2.0/24 | `rtb-private` | ❌ | NATGW via Public subnet |
+| `VPN-Subnet` | 10.0.3.0/24 | `rtb-hybrid` | 🔄 | VPN via VGW |
+| `TGW-Subnet` | 10.0.4.0/24 | `rtb-tgw` | 🔄 | Transit Gateway |
+
+---
+
+## Security & Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Least Privilege Routing" icon="lock">
+    Only add routes that are needed
+  </Card>
+  
+  <Card title="Separation of Environments" icon="layer-group">
+    Use separate route tables for prod/dev/test
+  </Card>
+  
+  <Card title="Audit Regularly" icon="magnifying-glass">
+    Periodically review with `aws ec2 describe-route-tables`
+  </Card>
+  
+  <Card title="Avoid IGW on Private Subnets" icon="shield">
+    Prevents accidental Internet exposure
+  </Card>
+  
+  <Card title="Tag Route Tables" icon="tag">
+    Use consistent tags (e.g., `Environment`, `SubnetType`)
+  </Card>
+</CardGroup>
+
+---
+
+## CLI Commands
+
+<Tabs>
+  <Tab title="List & View">
+    ```bash
+    # List all route tables
+    aws ec2 describe-route-tables
+    ```
+  </Tab>
+  
+  <Tab title="Create & Modify">
+    ```bash
+    # Add a route to a table
+    aws ec2 create-route
+    
+    # Modify an existing route
+    aws ec2 replace-route
+    
+    # Remove a route
+    aws ec2 delete-route
+    ```
+  </Tab>
+  
+  <Tab title="Associate">
+    ```bash
+    # Link a route table to a subnet
+    aws ec2 associate-route-table
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Lab Exercise
+
+<Steps>
+  <Step title="Create VPC">
+    Create a VPC with CIDR `10.0.0.0/16`
+  </Step>
+  
+  <Step title="Create Subnets">
+    Create two subnets: `10.0.1.0/24` (public) and `10.0.2.0/24` (private)
+  </Step>
+  
+  <Step title="Deploy Gateways">
+    Deploy an Internet Gateway and a NAT Gateway
+  </Step>
+  
+  <Step title="Configure Route Tables">
+    Create route tables for public and private subnets
+  </Step>
+  
+  <Step title="Test Connectivity">
+    Test connectivity:
+    - Public subnet → Internet ✅
+    - Private subnet → Internet via NAT ✅
+    - Private subnet inbound ❌
+  </Step>
+</Steps>
+
+---
+
+## Further Reading
+
+- [AWS Route Tables Documentation](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)
+- [AWS Transit Gateway Routing](https://docs.aws.amazon.com/vpc/latest/tgw/working-with-routes.html)
+- [AWS VPN Routing Guide](https://docs.aws.amazon.com/vpn/latest/s2svpn/VPNRouting.html)
+- [RFC 1519 — CIDR Overview](https://datatracker.ietf.org/doc/html/rfc1519)

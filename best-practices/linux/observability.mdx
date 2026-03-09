@@ -1,0 +1,401 @@
+---
+title: "Linux Observability"
+description: "Comprehensive guide to Linux observability tools for troubleshooting, performance engineering, and DevSecOps"
+icon: "chart-line"
+---
+
+Observability is the ability to understand what a Linux system is doing *internally* by examining the signals it emits — metrics, logs, traces, and events.
+
+This guide provides a structured overview of Linux observability tools, grouped by the system layers they inspect. It is designed as a practical reference for troubleshooting, performance engineering, capacity planning, and DevSecOps workflows.
+
+<Info>
+  This guide maps observability tools to layers of the Linux operating system, from user-space applications down to hardware, providing a mental model for selecting the right tool during analysis or incident response.
+</Info>
+
+## System Layers Overview
+
+<CardGroup cols={2}>
+  <Card title="Application & User-Space" icon="terminal">
+    Process behavior, system calls, library calls, and application-level metrics
+  </Card>
+  <Card title="System Libraries & Syscalls" icon="book">
+    Transitions between user-space and kernel-space, syscall latency
+  </Card>
+  <Card title="Kernel Subsystems" icon="microchip">
+    Filesystems, memory management, scheduling, networking internals
+  </Card>
+  <Card title="Device Drivers & Block Layer" icon="hard-drive">
+    I/O flow through the Linux block subsystem
+  </Card>
+  <Card title="Storage & Swap" icon="database">
+    Physical disks, logical volumes, controllers, swap usage
+  </Card>
+  <Card title="Network Stack & NICs" icon="network-wired">
+    Network interfaces, Ethernet drivers, ports, NIC statistics
+  </Card>
+  <Card title="Hardware" icon="server">
+    CPU, RAM, buses, performance counters, NUMA
+  </Card>
+  <Card title="System-Wide Tools" icon="gauge">
+    Multi-layer observability and historical metrics
+  </Card>
+</CardGroup>
+
+## 1. Application & User-Space Observability
+
+These tools inspect behavior at the *process and application* level, including interactions with system libraries.
+
+### Tools
+
+| Tool | Purpose |
+|------|----------|
+| **strace** | Traces system calls made by an application |
+| **ltrace** | Traces dynamic library calls |
+| **ss** | Modern socket statistics (replacement for `netstat`) |
+| **netstat** | Legacy connection state overview |
+| **sysdig** | System-wide syscall/event capture and filtering |
+| **lsof** | Lists open files, sockets, pipes |
+| **pidstat** | Per-process CPU, memory, I/O, threads |
+| **pcstat** | Page cache statistics for specific files |
+
+### When to Use
+
+<CardGroup cols={2}>
+  <Card title="Application Debugging" icon="bug">
+    Why an application is slow or blocked
+  </Card>
+  <Card title="Network Analysis" icon="network-wired">
+    Network usage per process
+  </Card>
+  <Card title="Security Auditing" icon="shield">
+    Open files and ports audit
+  </Card>
+  <Card title="Performance Tuning" icon="gauge-high">
+    Syscall patterns for optimization
+  </Card>
+</CardGroup>
+
+## 2. System Libraries & Syscall Interface
+
+This layer sits between applications and the kernel, helping examine transitions between user-space and kernel-space.
+
+### Tools
+
+<Accordion title="strace / ltrace">
+  Observe execution flow into syscalls and libraries
+</Accordion>
+
+<Accordion title="perf">
+  Syscall latency, profiling, hotspots
+</Accordion>
+
+<Accordion title="ftrace">
+  Built-in kernel tracer for syscalls and function calls
+</Accordion>
+
+<Accordion title="SystemTap (stap)">
+  Programmable probes for syscalls
+</Accordion>
+
+<Accordion title="LTTng">
+  High-performance tracing for production systems
+</Accordion>
+
+<Accordion title="eBPF / bpftrace">
+  Modern, safe kernel-level instrumentation
+</Accordion>
+
+<Tip>
+  For production systems, use **eBPF/bpftrace** or **LTTng** for high-resolution tracing with minimal overhead.
+</Tip>
+
+## 3. Kernel Subsystems Observability
+
+The kernel handles filesystems, memory management, scheduling, and networking. These tools inspect internal mechanisms.
+
+### Core Tools
+
+| Tool | Function |
+|------|----------|
+| **perf** | Scheduler behavior, CPU cycles, kernel hotspots |
+| **tcpdump** | Raw packet capture at IP/Ethernet layers |
+| **iptraf** | Lightweight network utilization monitor |
+| **vmstat** | Processes, memory, swap, I/O, interrupts |
+| **slabtop** | Kernel slab allocator usage |
+| **free** | Memory allocation breakdown |
+| **pidstat** | Scheduler awareness and per-thread stats |
+| **tiptop** | Per-thread metrics using hardware counters |
+
+### Use Cases
+
+<Steps>
+  <Step title="Memory Issues">
+    Identify memory pressure, leaks, or slab exhaustion
+  </Step>
+  <Step title="Network Problems">
+    Determine packet loss or congestion
+  </Step>
+  <Step title="Scheduler Latency">
+    Analyze scheduler-induced delays
+  </Step>
+  <Step title="Kernel Performance">
+    Understand kernel-side bottlenecks
+  </Step>
+</Steps>
+
+## 4. Device Drivers & Block Layer Observability
+
+These tools examine I/O as it flows through the Linux block subsystem.
+
+### Tools
+
+<CardGroup cols={3}>
+  <Card title="iostat" icon="chart-simple">
+    Block device throughput and latency
+  </Card>
+  <Card title="iotop" icon="list">
+    Per-process disk I/O usage
+  </Card>
+  <Card title="blktrace" icon="magnifying-glass">
+    Detailed block layer tracing
+  </Card>
+  <Card title="perf / tiptop" icon="microchip">
+    Device driver profiling
+  </Card>
+</CardGroup>
+
+<Info>
+  Use these tools for troubleshooting slow disk I/O, detecting I/O starvation, or analyzing LVM/RAID performance issues.
+</Info>
+
+## 5. Storage & Swap Observability
+
+Focusing on physical disks, logical volumes, controllers, and swap usage.
+
+### Key Tools
+
+```bash
+# View I/O performance
+iostat -x 1
+
+# Identify I/O-intensive processes
+iotop -o
+
+# Detailed I/O event tracing
+blktrace -d /dev/sda
+
+# Check swap usage
+swapon -s
+```
+
+<Warning>
+  High swap usage often indicates memory pressure. Use `vmstat` and `free` to diagnose memory issues before they impact performance.
+</Warning>
+
+## 6. Network Stack & NIC Observability
+
+Tools for examining network interfaces, Ethernet drivers, ports, and NIC statistics.
+
+### Network Tools
+
+| Tool | Purpose |
+|------|----------|
+| **tcpdump** | Packet-level visibility |
+| **ss / netstat** | Connections and sockets |
+| **iptraf** | Per-interface traffic charts |
+| **ethtool** | NIC driver settings and link state |
+| **nicstat** | Interface utilization |
+| **lldptool** | LLDP neighbor discovery |
+| **snmpget** | SNMP-based network metrics |
+
+### Common Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Packet Issues" icon="exclamation-triangle">
+    Drops, retransmits, MTU mismatches
+  </Card>
+  <Card title="NIC Tuning" icon="sliders">
+    Offload settings (TSO, GRO, etc.)
+  </Card>
+  <Card title="Link Problems" icon="link-slash">
+    Speed/duplex mismatch troubleshooting
+  </Card>
+</CardGroup>
+
+## 7. Hardware Observability
+
+Insights into how the **hardware itself** behaves — CPU frequency, power states, performance counters, NUMA locality, memory pressure, cache behavior, and bus throughput.
+
+### CPU Tools
+
+<Accordion title="mpstat">
+  Reports CPU usage per core, showing utilization, steal time, IRQ time, and more.
+</Accordion>
+
+<Accordion title="top">
+  Real-time process monitoring with CPU, load average, and per-thread breakdowns.
+</Accordion>
+
+<Accordion title="ps">
+  Snapshot of process states, CPU usage, memory usage, and scheduling information.
+</Accordion>
+
+<Accordion title="pidstat">
+  Per-thread and per-process CPU utilization, context switching, and scheduling metrics.
+</Accordion>
+
+<Accordion title="perf">
+  Hardware performance counter profiler (cycles, cache misses, branch mispredictions).
+</Accordion>
+
+<Accordion title="turbostat">
+  Intel-specific tool showing CPU frequencies, C-states, P-states, and turbo boost behavior.
+</Accordion>
+
+<Accordion title="rdmsr">
+  Reads CPU model-specific registers (MSRs) for extremely low-level introspection.
+</Accordion>
+
+### Memory Tools
+
+| Tool | Function |
+|------|----------|
+| **vmstat** | Paging, swapping, memory pressure, interrupts |
+| **free** | Total, used, cached, available memory |
+| **slabtop** | Kernel slab allocator statistics |
+| **numastat** | NUMA locality, node memory distribution |
+| **perf (memory events)** | Hardware counters for RAM, cache, memory bus |
+
+### When to Use Hardware Tools
+
+<Steps>
+  <Step title="NUMA Analysis">
+    Debug NUMA locality and cross-node memory access
+  </Step>
+  <Step title="CPU Throttling">
+    Investigate frequency scaling or thermal throttling
+  </Step>
+  <Step title="Memory Pressure">
+    Analyze leaking workloads or kernel slab issues
+  </Step>
+  <Step title="High-Performance Tuning">
+    Optimize compute-heavy or latency-sensitive workloads
+  </Step>
+</Steps>
+
+## 8. System-Wide Observability Tools
+
+These tools cover multiple layers at once, providing holistic system visibility.
+
+### Tools
+
+<CardGroup cols={2}>
+  <Card title="sar" icon="clock-rotate-left">
+    Historic performance logs across CPU, memory, I/O, network
+  </Card>
+  <Card title="dstat" icon="chart-mixed">
+    Live multi-metric system aggregation
+  </Card>
+  <Card title="sysdig" icon="eye">
+    Holistic tracing across syscalls, network, containers
+  </Card>
+  <Card title="/proc filesystem" icon="folder">
+    Raw kernel data for metrics, states, drivers, interfaces
+  </Card>
+</CardGroup>
+
+<Info>
+  Use system-wide tools for incident response, baselining, long-term trending, and anomaly detection.
+</Info>
+
+## Practical Use Cases
+
+### Root Cause Analysis (RCA)
+
+<Steps>
+  <Step title="Identify the Layer">
+    Determine if slowdown is CPU, memory, network, or storage related
+  </Step>
+  <Step title="Trace the Issue">
+    Follow a misbehaving process through syscalls into the kernel
+  </Step>
+  <Step title="Compare Baselines">
+    Compare observed performance against baseline metrics
+  </Step>
+</Steps>
+
+### Performance Tuning
+
+- **Scheduler tracing** for latency-sensitive workloads
+- **NIC tuning** via `ethtool` for high-throughput environments
+- **Storage insight** for LVM/RAID/SSD/HDD tuning
+
+### DevSecOps / Security
+
+<Warning>
+  A secure system is one that is *understood*, not just hardened.
+</Warning>
+
+- **eBPF tools** for detecting suspicious syscalls
+- **lsof** for auditing unexpected open sockets/files
+- **sysdig rules** for behavioral anomaly detection
+
+## Observability in DevSecOps
+
+Observability is not just operational — it is *security-critical*:
+
+<CardGroup cols={2}>
+  <Card title="Intrusion Detection" icon="shield-halved">
+    Detect unusual syscall patterns (possible intrusion)
+  </Card>
+  <Card title="Crypto Mining Detection" icon="bitcoin-sign">
+    Identify crypto miners via CPU and scheduler patterns
+  </Card>
+  <Card title="Exfiltration Detection" icon="download">
+    Spot data exfiltration via abnormal NIC or TCP behavior
+  </Card>
+  <Card title="Hardening Validation" icon="check-double">
+    Validate hardening changes improve rather than degrade performance
+  </Card>
+</CardGroup>
+
+## Quick Command Reference
+
+```bash
+# Application layer
+strace -p <PID>              # Trace system calls
+lsof -p <PID>                # List open files
+ss -tunap                    # Socket statistics
+
+# Kernel subsystems
+vmstat 1                     # Memory and I/O stats
+perf top                     # Real-time kernel profiling
+slabtop                      # Kernel memory allocator
+
+# Storage layer
+iostat -x 1                  # Disk I/O statistics
+iotop -o                     # I/O per process
+
+# Network layer
+tcpdump -i eth0              # Packet capture
+ethtool eth0                 # NIC settings
+
+# Hardware layer
+mpstat -P ALL 1              # Per-CPU statistics
+numastat                     # NUMA memory distribution
+
+# System-wide
+sar -A                       # Historical system metrics
+dstat -tclmdrn               # Live multi-metric view
+```
+
+<Tip>
+  Start with high-level tools like `top`, `vmstat`, and `iostat` to identify the problem layer, then drill down with specialized tools.
+</Tip>
+
+## References
+
+- Brendan Gregg — *Linux Performance Tools*
+- Kernel documentation — https://www.kernel.org/doc/
+- Sysdig, LTTng, SystemTap official documentation
+- eBPF / bpftrace reference guides

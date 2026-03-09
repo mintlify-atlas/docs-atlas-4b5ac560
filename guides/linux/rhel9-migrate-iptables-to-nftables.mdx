@@ -1,0 +1,165 @@
+---
+title: 'RHEL 9: Migrate iptables to nftables'
+description: 'Step-by-step guide to migrate firewall rules from iptables to nftables on RHEL 9'
+icon: 'firewall'
+---
+
+## Overview
+
+<Info>
+RHEL 9 uses `nftables` as the default backend for the firewall. The `iptables` commands in RHEL 9 are actually wrappers around `nftables` (`iptables-nft`) or the legacy backend (`iptables-legacy`), depending on installation.
+</Info>
+
+Direct migration ensures existing firewall rules are preserved while moving to a modern, unified syntax.
+
+### Key Points
+
+- RHEL 9 uses `nftables` as the default backend
+- `iptables` commands are wrappers around `nftables` (`iptables-nft`) or legacy (`iptables-legacy`)
+- Direct migration preserves existing firewall rules
+- Modern, unified syntax for better management
+
+---
+
+## Step-by-Step Migration
+
+<Steps>
+  <Step title="Check Current iptables Setup">
+    Export all IPv4/IPv6 rules to backup files:
+
+    ```bash
+    sudo iptables-save > ~/iptables.rules
+    sudo ip6tables-save > ~/ip6tables.rules
+    ```
+
+    <Note>
+    Inspect these files for custom chains or scripts you need to port manually.
+    </Note>
+
+    **Check which iptables version your system uses:**
+
+    ```bash
+    sudo alternatives --display iptables
+    ```
+
+    You should see something like:
+
+    ```
+    iptables - manual mode
+    link currently points to /usr/sbin/iptables-nft
+    ```
+
+    <Warning>
+    If it points to `iptables-legacy`, switching is recommended.
+    </Warning>
+  </Step>
+
+  <Step title="Install nftables">
+    Install and enable nftables service:
+
+    ```bash
+    sudo dnf install nftables -y
+    sudo systemctl enable --now nftables
+    ```
+
+    <Info>
+    Rules are stored in `/etc/nftables/` or `/etc/sysconfig/nftables.conf` depending on RHEL version.
+    </Info>
+  </Step>
+
+  <Step title="Convert iptables Rules to nftables">
+    RHEL 9 provides a script `iptables-translate` to convert rules:
+
+    ```bash
+    sudo iptables-restore-translate -f ~/iptables.rules > ~/nftables.rules
+    sudo ip6tables-restore-translate -f ~/ip6tables.rules >> ~/nftables.rules
+    ```
+
+    <Warning>
+    **Important:** Review the file carefully — some complex chains may need manual adjustments.
+    </Warning>
+  </Step>
+
+  <Step title="Test nftables Rules (Optional)">
+    Before applying permanently, test the rules:
+
+    ```bash
+    sudo nft -f ~/nftables.rules
+    ```
+
+    Check current nftables state:
+
+    ```bash
+    sudo nft list ruleset
+    ```
+
+    <Tip>
+    Test connectivity (SSH, web, VPN, etc.) to make sure nothing breaks.
+    </Tip>
+  </Step>
+
+  <Step title="Persist nftables Rules">
+    Copy the rules to the nftables configuration file:
+
+    ```bash
+    sudo cp ~/nftables.rules /etc/sysconfig/nftables.conf
+    sudo systemctl enable --now nftables
+    ```
+
+    Apply the changes:
+
+    ```bash
+    sudo systemctl restart nftables
+    ```
+  </Step>
+
+  <Step title="Disable iptables Service">
+    To avoid conflicts, disable the iptables service:
+
+    ```bash
+    sudo systemctl stop iptables ip6tables
+    sudo systemctl disable iptables ip6tables
+    ```
+
+    Confirm nftables is handling firewall rules:
+
+    ```bash
+    sudo nft list ruleset
+    ```
+  </Step>
+
+  <Step title="Switch iptables to NFT Backend (Optional)">
+    Even after migration, you can keep using `iptables` commands but backed by `nftables`:
+
+    ```bash
+    sudo alternatives --set iptables /usr/sbin/iptables-nft
+    sudo alternatives --set ip6tables /usr/sbin/ip6tables-nft
+    ```
+
+    <Info>
+    This ensures compatibility with scripts that still call `iptables`.
+    </Info>
+  </Step>
+</Steps>
+
+---
+
+## Key Tips
+
+<CardGroup cols={2}>
+  <Card title="Backup" icon="floppy-disk">
+    Always backup original iptables rules before migration
+  </Card>
+  
+  <Card title="Test First" icon="flask">
+    Test rule-by-rule on a staging host if possible
+  </Card>
+  
+  <Card title="Verify" icon="check">
+    Use `nft list ruleset` frequently to verify rule loading
+  </Card>
+  
+  <Card title="Avoid Mixing" icon="triangle-exclamation">
+    Avoid mixing `iptables-legacy` and `nftables` — choose one backend to prevent conflicts
+  </Card>
+</CardGroup>

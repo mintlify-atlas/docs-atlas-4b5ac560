@@ -1,0 +1,228 @@
+---
+title: "nftables Best Practices"
+description: "Modern firewall configuration with clean syntax, scalable rulesets, and security-first design"
+icon: "firewall"
+---
+
+Unlike iptables, nftables supports modern abstractions and cleaner syntax, making firewall rules more scalable, readable, and maintainable. This guide outlines recommended practices when building rulesets.
+
+## Organisation & Structure
+
+<Card title="Use Tables and Chains Consistently" icon="sitemap">
+  Keep separate tables for `inet` (IPv4+IPv6 combined), `ip`, and `ip6` only when necessary.
+</Card>
+
+### Basic Table Structure
+
+```bash
+table inet filter {
+    chain input {
+        type filter hook input priority 0;
+    }
+}
+```
+
+<Tip>
+  **Combine IPv4 + IPv6 rules**: Prefer `inet` family tables instead of duplicating rules for `ip` and `ip6`.
+</Tip>
+
+## Groups & Sets
+
+Sets replace the legacy `ipset` from iptables, providing easier management of IP groups and service ports without rule duplication.
+
+### IP Address Sets
+
+Use sets to manage groups of hosts or networks:
+
+```bash
+set blacklist {
+    type ipv4_addr;
+    elements = { 
+        192.168.10.5, 
+        192.168.20.0/24 
+    }
+}
+
+chain input {
+    type filter hook input priority 0;
+    ip saddr @blacklist drop
+}
+```
+
+### Port and Service Sets
+
+Simplify multi-service allow/deny rules:
+
+```bash
+set web_ports {
+    type inet_service;
+    elements = { 80, 443 }
+}
+
+chain input {
+    tcp dport @web_ports accept
+}
+```
+
+<Info>
+  Sets use maps and intervals internally, making them significantly faster than multiple individual rules at scale.
+</Info>
+
+## Reusability & Abstraction
+
+<CardGroup cols={2}>
+  <Card title="Name Chains by Purpose" icon="tag">
+    Use descriptive names like `input`, `forward`, `output`, `log_drop`
+  </Card>
+  <Card title="Split Rules Logically" icon="split">
+    Separate base policy, user-defined services, and logging rules
+  </Card>
+</CardGroup>
+
+### Example: Logging Chain
+
+```bash
+chain log_drop {
+    log prefix "NFT DROP: " flags all
+    drop
+}
+```
+
+## Security-Oriented Defaults
+
+<Warning>
+  Always implement a **default deny** policy. End chains with `drop` or `reject` unless traffic is explicitly allowed.
+</Warning>
+
+### Security Best Practices
+
+<Steps>
+  <Step title="Default Deny">
+    Always end chains with `drop`/`reject` unless explicitly allowed
+  </Step>
+  <Step title="Log Before Dropping">
+    Log sensitive traffic to detect probing and intrusion attempts
+  </Step>
+  <Step title="Restrict Administrative Ports">
+    Limit SSH, RDP, and VPN access to trusted IP sets
+  </Step>
+  <Step title="Implement Rate Limits">
+    Use rate limiting on logging and SSH attempts
+  </Step>
+</Steps>
+
+### Rate Limiting Example
+
+```bash
+limit rate 5/minute accept
+```
+
+## Performance & Maintainability
+
+<CardGroup cols={2}>
+  <Card title="Prefer Sets" icon="bolt">
+    Sets are faster than many individual rules (nftables uses maps/intervals internally)
+  </Card>
+  <Card title="Version Control" icon="code-branch">
+    Keep ruleset in `/etc/sysconfig/nftables.conf` under version control (Git)
+  </Card>
+  <Card title="Add Comments" icon="comment">
+    Use comments generously in rules for future administrators
+  </Card>
+  <Card title="Single File Configuration" icon="file">
+    Maintain configuration in one file for easier management
+  </Card>
+</CardGroup>
+
+## Testing & Validation
+
+<Warning>
+  Always keep a **console session open** when applying new firewall rules to prevent lockout.
+</Warning>
+
+### Testing Workflow
+
+```bash
+# Test new rules
+nft -f new_rules.conf
+
+# Verify current ruleset
+nft list ruleset
+```
+
+<Note>
+  Stage complex changes on non-production systems first before deploying to production.
+</Note>
+
+## Complete Example: IT Host Access Control
+
+This example demonstrates multi-line sets and proper rule organization for IT administrative access:
+
+```yaml
+table inet filter {
+    # IT hosts allowed to access sensitive services
+    set it_hosts {
+        type ipv4_addr;
+        elements = {
+            172.16.80.10,  # IT-010
+            172.16.80.11,  # IT-011
+            172.16.80.12   # IT-012
+        }
+    }
+
+    # Common IT service ports
+    set it_ports {
+        type inet_service;
+        elements = {
+            22,      # SSH
+            3389,    # RDP
+            80,      # HTTP
+            443      # HTTPS
+        }
+    }
+
+    chain input {
+        type filter hook input priority 0;
+
+        # allow loopback
+        iif lo accept
+
+        # allow established/related connections
+        ct state established,related accept
+
+        # allow IT hosts on specific ports
+        ip saddr @it_hosts tcp dport @it_ports accept
+
+        # drop everything else with logging
+        jump log_drop
+    }
+
+    chain log_drop {
+        log prefix "NFT DROP: " flags all
+        drop
+    }
+}
+```
+
+<Accordion title="Key Features of This Configuration">
+  - **IP Sets**: Centralized management of IT hosts
+  - **Port Sets**: Easy service definition
+  - **Stateful Inspection**: Allows established connections
+  - **Logging**: All dropped packets are logged with prefix
+  - **Comments**: Inline documentation for each IP
+  - **Default Deny**: Explicit drop at the end
+</Accordion>
+
+## Quick Reference
+
+| Feature | iptables | nftables |
+|---------|----------|----------|
+| **IP Sets** | Separate `ipset` tool | Native sets |
+| **IPv4+IPv6** | Duplicate rules | `inet` family |
+| **Syntax** | Complex | Clean, readable |
+| **Performance** | Good | Better with sets |
+| **Maintainability** | Moderate | Excellent |
+
+<Tip>
+  For new deployments, always choose nftables over legacy iptables for better maintainability and performance.
+</Tip>

@@ -1,0 +1,398 @@
+---
+title: "Online Storage Resize"
+description: "Safe, non-disruptive storage expansion for SAN, LVM2, and filesystems while mounted and under active I/O"
+icon: "arrows-maximize"
+---
+
+Modern enterprise Linux storage stacks are designed for **non-disruptive, online capacity expansion**, even while filesystems are mounted and under active I/O.
+
+This document explains why each layer—**SAN/FC, LVM2, and XFS**—fully supports online growth and how to perform it safely.
+
+<Info>
+  **Storage Path**: ME4 LUN → dm-multipath → LVM2 (PV/VG/LV) → XFS/ext4
+</Info>
+
+## Why Online Growth is Safe
+
+Each component in the modern Linux storage stack is explicitly designed to support online expansion:
+
+<CardGroup cols={3}>
+  <Card title="SAN / FC" icon="server" color="#3498db">
+    Nondisruptive LUN expansion by design
+  </Card>
+  <Card title="LVM2" icon="layer-group" color="#e74c3c">
+    Metadata-only updates, safe under I/O
+  </Card>
+  <Card title="Filesystems" icon="folder" color="#2ecc71">
+    XFS/ext4 designed for mounted growth
+  </Card>
+</CardGroup>
+
+## 1. SAN / Fibre Channel — Nondisruptive LUN Expansion
+
+Modern enterprise SAN systems (such as **Dell EMC ME4**) support **live, nondisruptive LUN expansion**:
+
+<Steps>
+  <Step title="Designed for Online Operation">
+    - Nondisruptive expansion with brief I/O stalls
+    - No unmount or downtime required
+  </Step>
+  <Step title="Simple Host Rescan">
+    - Host rescans the SCSI bus
+    - Multipath handles updated path geometry automatically
+  </Step>
+</Steps>
+
+### Dell ME4 Official Statement
+
+<Note>
+  **"Resize tasks can be done online without disrupting the applications."**
+  
+  Source: [Dell PowerVault ME4 and Linux Best Practices Guide](https://dl.dell.com/manuals/common/powervault-me4-and-linux-best-practices_en-us.pdf)
+</Note>
+
+### Rescan Commands
+
+After expanding the LUN on the SAN:
+
+```bash
+# Rescan SCSI bus for new size
+rescan-scsi-bus.sh --resize
+```
+
+```bash
+# Update multipath device
+multipathd -k
+# Inside multipathd shell:
+multipathd> resize map mpathX
+```
+
+<Info>
+  **Conclusion**: SAN LUN expansion is explicitly engineered to occur online, with no interruption to servers or I/O.
+</Info>
+
+## 2. LVM2 — Online PV and LV Expansion
+
+<Warning>
+  Do not proceed unless **all paths and the multipath device** report the new size.
+</Warning>
+
+### Verify All Paths Are Resized
+
+```bash
+multipath -ll mpathX
+blockdev --getsize64 /dev/sdX
+blockdev --getsize64 /dev/mapper/mpathX
+```
+
+### 2.1 PV Resize (`pvresize`) — Safe While Mounted
+
+According to Red Hat's LVM developers:
+
+<Note>
+  **"`pvresize` simply updates the metadata to make LVM aware of the new size."**
+  
+  **"The data area does not change; only the PV extent map is updated."**
+  
+  — Jonathan Brassow, Red Hat LVM developer
+  
+  Source: [Red Hat LVM Mailing List](https://www.redhat.com/archives/linux-lvm/2009-May/msg00040.html)
+</Note>
+
+Because it modifies **only metadata**, `pvresize`:
+
+- Does not touch data blocks
+- Does not affect the filesystem
+- Is safe under ongoing I/O (provided all block device paths are resized)
+- Is routinely run on **root filesystems**, which cannot be unmounted
+
+### Cloud Vendor Confirmation
+
+All three major cloud providers document `pvresize` as part of their **"expand disk without downtime"** workflow:
+
+<CardGroup cols={3}>
+  <Card title="AWS" icon="aws" href="https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html">
+    Expand EBS volumes online
+  </Card>
+  <Card title="Google Cloud" icon="google" href="https://cloud.google.com/compute/docs/disks/resize-persistent-disk">
+    Resize persistent disks without downtime
+  </Card>
+  <Card title="Azure" icon="microsoft" href="https://learn.microsoft.com/en-us/azure/virtual-machines/linux/expand-disks?tabs=ubuntu#expand-without-downtime">
+    Expand disks without downtime
+  </Card>
+</CardGroup>
+
+<Info>
+  These platforms are extremely conservative; documenting `pvresize` online means it is **fully safe and supported**.
+</Info>
+
+### 2.2 LV Resize (`lvextend`) — Online and Atomic
+
+`lvextend` updates:
+- LVM metadata
+- device-mapper mappings
+
+These operations are:
+- **Atomic** — metadata is committed atomically via device-mapper table swap
+- **Safe during active I/O**
+- **Non-disruptive** to mounted filesystems
+
+Cloud vendors (AWS, GCP, Azure) all document `lvextend` as **online**, immediately after `pvresize`.
+
+<Info>
+  **Conclusion**: LVM2 PV and LV can be grown **online**, even during live writes, with no unmount required.
+</Info>
+
+## 3. Online Filesystem Growth
+
+After expanding the block device (SAN → PV → LV), the filesystem must grow to use the new space.
+
+### Filesystem Support Matrix
+
+| Filesystem | Online Grow | Notes |
+|-----------|--------------|-------|
+| **XFS v4+** | ✅ | Designed for online growth; cannot shrink |
+| **ext4** | ✅ | `resize2fs` supports online grow |
+
+### 3.1 XFS — Designed for Online Expansion
+
+Red Hat's official XFS documentation states:
+
+<Note>
+  **"The filesystem must be mounted to be grown."**
+  
+  Source: [Red Hat Storage Administration Guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/storage_administration_guide/xfsgrow)
+</Note>
+
+This is one of the clearest vendor statements that XFS online growth is not just supported, but **required** while mounted.
+
+### Why XFS Online Growth is Safe
+
+<CardGroup cols={2}>
+  <Card title="Journaled Metadata" icon="book">
+    All operations are journaled for consistency
+  </Card>
+  <Card title="Allocation Groups" icon="layer-group">
+    Expand in place without reorganization
+  </Card>
+  <Card title="Mount Required" icon="check">
+    Must be mounted to grow (designed behavior)
+  </Card>
+  <Card title="Enterprise Ready" icon="building">
+    Designed for SAN arrays, RAID, HPC
+  </Card>
+</CardGroup>
+
+### XFS Growth Command
+
+```bash
+# Grow XFS filesystem to use all available space
+xfs_growfs /mount/point
+```
+
+### ext4 Growth Command
+
+```bash
+# Grow ext4 filesystem online
+resize2fs /dev/mapper/vg-lv
+```
+
+<Info>
+  **Conclusion**: XFS is one of the safest and most robust filesystems for **online, mounted, high-throughput** growth.
+</Info>
+
+## 4. Network Share Clients Automatically See Grown Filesystems
+
+When an XFS or ext4 filesystem exported over NFSv4 is grown on the server, clients will automatically reflect the new size without requiring remounts.
+
+<Note>
+  NFSv4 is stateful and revalidates filesystem attributes, so the updated capacity becomes visible to clients transparently.
+</Note>
+
+**Verify on client**:
+```bash
+df -h /mnt/nfs_share
+```
+
+## Complete Online Resize Procedure
+
+<Steps>
+  <Step title="Expand LUN on SAN">
+    Use SAN management interface to grow the LUN
+  </Step>
+  <Step title="Rescan SCSI Bus">
+    ```bash
+    rescan-scsi-bus.sh --resize
+    ```
+  </Step>
+  <Step title="Verify All Paths">
+    ```bash
+    multipath -ll mpathX
+    blockdev --getsize64 /dev/mapper/mpathX
+    ```
+    All paths must show new size
+  </Step>
+  <Step title="Resize Multipath Device">
+    ```bash
+    multipathd -k
+    multipathd> resize map mpathX
+    ```
+  </Step>
+  <Step title="Resize Physical Volume">
+    ```bash
+    pvresize /dev/mapper/mpathX
+    pvs  # Verify new size
+    ```
+  </Step>
+  <Step title="Extend Logical Volume">
+    ```bash
+    lvextend -l +100%FREE /dev/vg/lv
+    lvs  # Verify new size
+    ```
+  </Step>
+  <Step title="Grow Filesystem">
+    For XFS:
+    ```bash
+    xfs_growfs /mount/point
+    ```
+    
+    For ext4:
+    ```bash
+    resize2fs /dev/vg/lv
+    ```
+  </Step>
+  <Step title="Verify New Size">
+    ```bash
+    df -h /mount/point
+    ```
+  </Step>
+</Steps>
+
+## Why Older Admins Avoid Online Resize
+
+Before kernel **2.6.31** and early LVM2/LVM1:
+
+<Warning>
+  Historical limitations (pre-2010):
+  - `pvresize` sometimes failed to detect new sizes
+  - Multipath resizing was unreliable
+  - PV resizing sometimes required `pvcreate --restorefile`
+  - ext2/ext3 could corrupt if device size changed underneath
+  - SAN rescan tools were buggy
+  - UNIX systems generally required unmounting for geometry changes
+  - LVM1 had no reliable online extension
+</Warning>
+
+This produced the legacy rule:
+
+> **"Never resize storage while mounted."**
+
+### Modern RHEL9 (2021+) Systems
+
+<CardGroup cols={2}>
+  <Card title="Online PV Expansion" icon="check" color="#2ecc71">
+    Safe and fully supported
+  </Card>
+  <Card title="Online LV Expansion" icon="check" color="#2ecc71">
+    Safe and fully supported
+  </Card>
+  <Card title="Online XFS Growth" icon="check" color="#2ecc71">
+    Officially supported and required
+  </Card>
+  <Card title="SAN Growth" icon="check" color="#2ecc71">
+    Nondisruptive by design
+  </Card>
+</CardGroup>
+
+<Info>
+  The entire modern storage stack is designed for online operation.
+</Info>
+
+## Summary Table
+
+| Layer | Operation | Safe While Mounted / Under I/O? | Why |
+|-------|-----------|----------------------------------|------|
+| **SAN / FC** | Expand LUN | ✅ Yes | Engineered for nondisruptive growth |
+| **LVM2 PV** | `pvresize` | ✅ Yes | Only metadata updated; no data block changes |
+| **LVM2 LV** | `lvextend` | ✅ Yes | Atomic metadata update; safe under I/O |
+| **XFS** | `xfs_growfs` | ✅ Yes | Must be mounted; designed for online growth |
+| **ext4** | `resize2fs` | ✅ Yes | Supports online grow (not shrink) |
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Verify Before Proceeding" icon="clipboard-check">
+    Always verify all paths show new size before running `pvresize`
+  </Card>
+  <Card title="Test in Non-Production" icon="flask">
+    Practice the procedure in a test environment first
+  </Card>
+  <Card title="Backup Before Changes" icon="floppy-disk">
+    Take snapshots or backups before major storage operations
+  </Card>
+  <Card title="Monitor During Growth" icon="eye">
+    Watch `iostat` and system logs during the resize process
+  </Card>
+  <Card title="Schedule Maintenance Windows" icon="calendar">
+    Perform during low I/O periods when possible
+  </Card>
+  <Card title="Document Procedures" icon="file-lines">
+    Keep runbooks updated with your specific environment details
+  </Card>
+</CardGroup>
+
+<Tip>
+  For production systems, consider taking LVM snapshots before resizing, providing a quick rollback path if needed.
+</Tip>
+
+## Troubleshooting
+
+<Accordion title="PV Not Showing New Size">
+  Verify all paths are updated:
+  ```bash
+  multipath -ll
+  blockdev --getsize64 /dev/mapper/mpathX
+  pvs
+  ```
+  
+  Force rescan if needed:
+  ```bash
+  echo 1 > /sys/class/block/sdX/device/rescan
+  ```
+</Accordion>
+
+<Accordion title="Filesystem Not Growing">
+  Verify the underlying LV was extended:
+  ```bash
+  lvs
+  df -h
+  ```
+  
+  For XFS, ensure you specify the mount point (not device):
+  ```bash
+  xfs_growfs /mount/point  # Correct
+  xfs_growfs /dev/vg/lv    # Wrong
+  ```
+</Accordion>
+
+<Accordion title="Multipath Not Detecting New Size">
+  Reload multipath configuration:
+  ```bash
+  multipathd reconfigure
+  multipathd -k
+  multipathd> resize map mpathX
+  ```
+</Accordion>
+
+## References
+
+- Dell EMC ME4 Linux Best Practices
+- Red Hat LVM Developer Archives
+- AWS EBS Volume Expansion Documentation
+- Google Cloud Persistent Disk Resize Guide
+- Microsoft Azure Disk Expansion Documentation
+- Red Hat Enterprise Linux Storage Administration Guide
+
+<Note>
+  This guide reflects best practices for RHEL 9 / CentOS Stream 9 and similar modern distributions. Always consult your specific vendor documentation.
+</Note>

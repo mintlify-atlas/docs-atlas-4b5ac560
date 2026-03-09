@@ -1,0 +1,300 @@
+---
+title: "Proxmox Userscripts"
+description: "User-friendly automation scripts for Proxmox VE cluster management and administration"
+icon: "scroll"
+---
+
+<Info>
+A collection of **user-friendly automation scripts** for Proxmox VE environments. Scripts are designed to speed up repetitive administrative tasks, improve consistency, and enforce best practices in cluster management.
+</Info>
+
+## Overview
+
+Proxmox Userscripts provides a curated library of automation tools for common Proxmox VE operations, reducing manual work and human error in virtual infrastructure management.
+
+<CardGroup cols={2}>
+  <Card title="Automation" icon="gears">
+    Automate repetitive administrative tasks
+  </Card>
+  <Card title="Consistency" icon="check-double">
+    Enforce standardized configurations across clusters
+  </Card>
+  <Card title="Best Practices" icon="star">
+    Built-in security and operational best practices
+  </Card>
+  <Card title="Time Savings" icon="clock">
+    Reduce manual configuration and troubleshooting time
+  </Card>
+</CardGroup>
+
+---
+
+## Use Cases
+
+### Common Operations
+
+<Accordion title="VM Provisioning">
+Automate virtual machine creation with consistent:
+- Resource allocation (CPU, RAM, disk)
+- Network configuration (VLAN tagging, bridges)
+- Storage backend selection
+- Post-deployment configuration hooks
+</Accordion>
+
+<Accordion title="Backup Management">
+Streamline backup operations:
+- Scheduled backup creation
+- Retention policy enforcement
+- Backup verification and testing
+- Off-site replication automation
+</Accordion>
+
+<Accordion title="Cluster Maintenance">
+Simplify cluster administration:
+- Node updates and patching
+- Storage pool management
+- Resource rebalancing
+- Health checks and monitoring
+</Accordion>
+
+<Accordion title="Template Management">
+Standardize VM templates:
+- Template creation from existing VMs
+- Cloud-init integration
+- Template versioning and updates
+- Multi-cluster template distribution
+</Accordion>
+
+---
+
+## Key Features
+
+<Steps>
+  <Step title="User-Friendly Interface">
+    Clear prompts and informative output for easy use by operators of all skill levels
+  </Step>
+  
+  <Step title="Safety Checks">
+    Built-in validation and confirmation prompts prevent destructive operations
+  </Step>
+  
+  <Step title="Idempotent Operations">
+    Scripts can be run multiple times without causing unintended side effects
+  </Step>
+  
+  <Step title="Comprehensive Logging">
+    All operations are logged for audit trails and troubleshooting
+  </Step>
+</Steps>
+
+---
+
+## Script Categories
+
+### VM Management
+
+Automation scripts for virtual machine lifecycle:
+
+- **VM creation** - Deploy VMs from templates with custom configurations
+- **VM cloning** - Rapid provisioning from existing VMs
+- **VM migration** - Live migration and cold storage migration
+- **Resource adjustment** - CPU, memory, and disk hot-plug operations
+
+<Tip>
+Use VM management scripts in conjunction with Ansible or Terraform for full infrastructure-as-code workflows.
+</Tip>
+
+### Storage Operations
+
+Storage management and optimization:
+
+- **Storage pool creation** - LVM, ZFS, Ceph integration
+- **Disk management** - Add, resize, migrate virtual disks
+- **Snapshot operations** - Create, restore, delete snapshots
+- **Thin provisioning** - Optimize storage utilization
+
+<Warning>
+Always test storage operations in a lab environment before running on production clusters.
+</Warning>
+
+### Network Configuration
+
+Network automation tools:
+
+- **Bridge configuration** - Create and manage Linux bridges
+- **VLAN setup** - VLAN tagging for network segmentation
+- **Firewall rules** - Proxmox firewall automation
+- **SDN integration** - Software-defined networking setup
+
+### Backup & Recovery
+
+Backup workflow automation:
+
+- **Backup scheduling** - Automated backup job creation
+- **Retention management** - Policy-based backup pruning
+- **Restore operations** - Simplified VM and CT restore
+- **Verification** - Automated backup integrity checks
+
+---
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Test First" icon="flask">
+    Always test scripts in a lab or staging environment before production use
+  </Card>
+  <Card title="Read the Code" icon="file-code">
+    Review script source before execution to understand what it does
+  </Card>
+  <Card title="Backup Before Changes" icon="floppy-disk">
+    Take snapshots or backups before running scripts that modify infrastructure
+  </Card>
+  <Card title="Version Control" icon="code-branch">
+    Track script versions and changes in your infrastructure repository
+  </Card>
+</CardGroup>
+
+---
+
+## Installation
+
+<Steps>
+  <Step title="Clone Repository">
+    ```bash
+    git clone https://github.com/safesploitOrg/proxmox-userscripts.git
+    cd proxmox-userscripts
+    ```
+  </Step>
+  
+  <Step title="Review Scripts">
+    Examine script contents to understand what they do:
+    ```bash
+    ls -la scripts/
+    cat scripts/example-script.sh
+    ```
+  </Step>
+  
+  <Step title="Make Executable">
+    ```bash
+    chmod +x scripts/*.sh
+    ```
+  </Step>
+  
+  <Step title="Run Scripts">
+    Execute with appropriate permissions:
+    ```bash
+    ./scripts/example-script.sh
+    ```
+  </Step>
+</Steps>
+
+<Note>
+Most scripts require root privileges on Proxmox nodes. Always verify you're running on the correct node before execution.
+</Note>
+
+---
+
+## Example Workflows
+
+### Rapid VM Deployment
+
+<Steps>
+  <Step title="Prepare Template">
+    Create a base VM template with cloud-init support
+  </Step>
+  
+  <Step title="Run Provisioning Script">
+    Execute VM creation script with desired parameters
+    ```bash
+    ./scripts/create-vm.sh --template ubuntu-22.04 --name webserver-01 --cpu 2 --ram 4096
+    ```
+  </Step>
+  
+  <Step title="Post-Configuration">
+    Scripts automatically handle cloud-init, network configuration, and resource allocation
+  </Step>
+</Steps>
+
+### Automated Backup Workflow
+
+<Steps>
+  <Step title="Schedule Backups">
+    Configure retention policy and schedule
+    ```bash
+    ./scripts/setup-backup.sh --retention 7 --schedule "0 2 * * *"
+    ```
+  </Step>
+  
+  <Step title="Verification">
+    Automated integrity checks run after each backup
+  </Step>
+  
+  <Step title="Cleanup">
+    Old backups are automatically pruned based on retention policy
+  </Step>
+</Steps>
+
+---
+
+## Security Considerations
+
+<Warning>
+**Important Security Notes:**
+
+- Scripts may require root access to Proxmox nodes
+- Review all code before execution on production systems
+- Use dedicated service accounts with least-privilege access
+- Audit all script modifications and maintain version control
+- Never commit credentials or API tokens to version control
+</Warning>
+
+### Secure Usage
+
+- **Credentials:** Use Proxmox API tokens instead of root passwords
+- **Permissions:** Run scripts with minimum required privileges
+- **Logging:** Enable comprehensive logging for audit trails
+- **Access Control:** Restrict script execution to authorized administrators
+
+---
+
+## Repository Information
+
+- **Repository:** [github.com/safesploitOrg/proxmox-userscripts](https://github.com/safesploitOrg/proxmox-userscripts)
+- **Status:** Active
+- **Visibility:** Public
+- **Owner:** safesploit
+- **License:** Check repository for current license
+
+<Info>
+Contributions are welcome! If you've developed useful Proxmox automation scripts, please submit a pull request with:
+- Clear documentation
+- Usage examples
+- Safety checks and validation
+- Error handling
+</Info>
+
+---
+
+## Support & Contributions
+
+<CardGroup cols={2}>
+  <Card title="Report Issues" icon="bug" href="https://github.com/safesploitOrg/proxmox-userscripts/issues">
+    Submit bug reports and feature requests on GitHub
+  </Card>
+  <Card title="Contribute" icon="code-pull-request" href="https://github.com/safesploitOrg/proxmox-userscripts/pulls">
+    Submit pull requests with improvements and new scripts
+  </Card>
+</CardGroup>
+
+<Tip>
+Before contributing, review the CONTRIBUTING.md file in the repository for guidelines on code style, testing requirements, and submission process.
+</Tip>
+
+---
+
+## Resources
+
+- [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
+- [Proxmox API Documentation](https://pve.proxmox.com/pve-docs/api-viewer/)
+- [Proxmox Community Forum](https://forum.proxmox.com/)
+- [safesploitOrg GitHub](https://github.com/safesploitOrg)

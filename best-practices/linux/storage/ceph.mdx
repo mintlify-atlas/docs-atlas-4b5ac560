@@ -1,0 +1,374 @@
+---
+title: "Ceph Best Practices"
+description: "Enterprise-grade distributed storage and live network migration procedures for Ceph clusters"
+icon: "database"
+---
+
+This guide documents best practices for managing Ceph distributed storage systems, with a focus on live network migration procedures that maintain cluster availability and data integrity.
+
+<Info>
+  The procedures documented here were performed on production Proxmox-backed Ceph clusters with **zero downtime and zero data loss**.
+</Info>
+
+## Ceph Public Network Migration
+
+This procedure documents how to migrate Ceph traffic from a congested management network to a dedicated Ceph fabric while maintaining full cluster availability.
+
+### Migration Overview
+
+**Goal**: Move all Ceph traffic (MON, MGR, MDS, OSD front + back) to a dedicated network fabric.
+
+**Example**: `172.16.0.0/16` → `10.50.0.0/24`
+
+**Outcome**: No service downtime, no data loss
+
+## Key Concepts
+
+<CardGroup cols={2}>
+  <Card title="public_network" icon="network-wired">
+    - Client ↔ OSD traffic
+    - MON / MGR control plane
+    - CephFS metadata traffic
+  </Card>
+  <Card title="cluster_network" icon="server">
+    - OSD ↔ OSD replication & recovery
+    - Data plane for cluster operations
+  </Card>
+</CardGroup>
+
+### Important Behaviors
+
+<Warning>
+  - **MON & MGR enforce address validation**
+  - **OSDs bind addresses at restart**
+  - `/etc/pve/ceph.conf` is **not authoritative alone** — Ceph uses its **internal config database**
+</Warning>
+
+## Migration Procedure
+
+### Step 1: Prepare the New Ceph Network
+
+Create a **dedicated bridge** on each node:
+
+```bash
+vim /etc/network/interfaces
+```
+
+```ini
+auto vmbr-ceph
+iface vmbr-ceph inet static
+    address 10.50.0.20/24
+    bridge-ports eno2
+    bridge-stp off
+    bridge-fd 0
+# Ceph (Fabric)
+```
+
+**Assign IPs** on the new subnet:
+
+- `pve2 → 10.50.0.20/24`
+- `pve3 → 10.50.0.30/24`
+- `pve4 → 10.50.0.40/24`
+
+<Note>
+  This network is **isolated** — no gateway required.
+</Note>
+
+**Verify connectivity**:
+
+```bash
+ping 10.50.0.30
+iperf3 -s  # On one node
+iperf3 -c 10.50.0.30  # From another node
+```
+
+### Step 2: Add the New Public Network (Dual-Network Phase)
+
+<Warning>
+  **Backup first**: `cp /etc/pve/ceph.conf /etc/pve/ceph.conf.bak`
+</Warning>
+
+Edit `/etc/pve/ceph.conf`:
+
+```ini
+public_network = 10.50.0.0/24, 172.16.0.0/16
+cluster_network = 10.50.0.0/24, 172.16.0.0/16
+```
+
+<Info>
+  **Do NOT remove the old network yet** — this allows gradual migration.
+</Info>
+
+Confirm:
+```bash
+ceph config dump
+```
+
+Verify in Proxmox UI → **Ceph → Nodes**
+
+### Step 3: Recreate MONs (One by One)
+
+<Steps>
+  <Step title="Destroy First MON">
+    ```bash
+    pveceph mon destroy pve2
+    ```
+  </Step>
+  <Step title="Recreate MON">
+    ```bash
+    pveceph mon create
+    ```
+  </Step>
+  <Step title="Verify Quorum">
+    ```bash
+    ceph -s
+    ```
+    Ensure quorum is maintained before proceeding
+  </Step>
+  <Step title="Repeat for Each MON">
+    Recreate remaining MONs one at a time, verifying quorum after each
+  </Step>
+</Steps>
+
+<Warning>
+  Always ensure quorum after each MON recreation before proceeding to the next.
+</Warning>
+
+### Step 4: Recreate MGRs (One by One)
+
+<Info>
+  Recreate **standby managers first**, then the **active manager last**.
+</Info>
+
+```bash
+pveceph mgr destroy <node>
+pveceph mgr create
+```
+
+**Verify**:
+```bash
+ceph mgr dump
+```
+
+<Accordion title="Recovery Tip: MGR Fails to Start">
+  If a manager fails to start:
+  ```bash
+  systemctl reset-failed ceph-mgr@<node>
+  systemctl start ceph-mgr@<node>
+  ```
+</Accordion>
+
+### Step 5: Recreate CephFS Metadata Servers (MDS)
+
+<Note>
+  MDS binds its address **at creation time**
+</Note>
+
+```bash
+pveceph mds destroy <node>
+pveceph mds create
+```
+
+✔ Verify CephFS health before proceeding.
+
+### Step 6: Remove the Old Public Network
+
+Edit `/etc/pve/ceph.conf` and remove the old network:
+
+```ini
+public_network = 10.50.0.0/24
+cluster_network = 10.50.0.0/24
+```
+
+### Step 7: Recreate MONs, MGRs, and MDS (Again)
+
+This ensures **all control-plane daemons bind exclusively** to the new network.
+
+<Steps>
+  <Step title="Recreate MONs">
+    One by one, verifying quorum after each
+  </Step>
+  <Step title="Recreate MGRs">
+    Standbys first, active last
+  </Step>
+  <Step title="Recreate MDS">
+    One by one, verifying CephFS health
+  </Step>
+</Steps>
+
+### Step 8: Protect the Cluster Before Touching OSDs
+
+```bash
+ceph osd set noout
+```
+
+<Warning>
+  This prevents Ceph from marking OSDs as out during restart.
+</Warning>
+
+### Step 9: Restart OSDs (Data Plane Migration)
+
+Restart **one OSD at a time**:
+
+```bash
+systemctl restart ceph-osd@<id>
+ceph -s
+```
+
+Wait for PGs to return to `active+clean` before proceeding:
+
+```text
+PGs: active+clean
+```
+
+<Tip>
+  Restart OSDs gradually to avoid overwhelming the cluster with recovery traffic.
+</Tip>
+
+### Step 10: Remove Protection
+
+```bash
+ceph osd unset noout
+```
+
+## Verification (Critical)
+
+### 1. Verify Ceph Daemon Addresses
+
+```bash
+ceph osd metadata <id> | egrep 'front_addr|back_addr'
+```
+
+**Expected**:
+- ✅ `front_addr → 10.50.0.x`
+- ✅ `back_addr → 10.50.0.x`
+- ❌ No `172.16.x.x`
+
+### 2. Verify Traffic is Using the Ceph Fabric
+
+While Ceph is under load:
+
+```bash
+ip -s link show vmbr-ceph
+```
+
+RX/TX counters should increase, confirming traffic is **not** using the management network.
+
+### 3. Verify Network Performance (iperf3)
+
+<Warning>
+  `iperf3` must be installed on **all Ceph nodes**
+</Warning>
+
+```bash
+apt install iperf3
+```
+
+**Server on one node**:
+```bash
+iperf3 -s
+```
+
+**Client on a different node**:
+```bash
+iperf3 -c <peer_ip> -P 4
+```
+
+**Expected for 2.5 GbE Ceph fabric**:
+- **~2.1–2.4 Gbit/s**
+- Minimal or zero retransmits
+- Stable throughput across multiple streams
+
+## Troubleshooting
+
+### "OSDs Not Reachable / Wrong Subnet"
+
+**Symptom**:
+```text
+osd.X's public address is not in '172.16.x.x/16' subnet
+```
+
+**Cause**: Ceph config DB or MON/MGR cache still references the old network.
+
+**Fix**:
+
+<Steps>
+  <Step title="Restart ALL MONs (mandatory)">
+    ```bash
+    systemctl restart ceph-mon@pve2
+    systemctl restart ceph-mon@pve3
+    systemctl restart ceph-mon@pve4
+    ```
+  </Step>
+  <Step title="Restart ALL MGRs (mandatory)">
+    ```bash
+    systemctl restart ceph-mgr@pve2
+    systemctl restart ceph-mgr@pve3
+    systemctl restart ceph-mgr@pve4
+    ```
+  </Step>
+  <Step title="Clean Config DB (optional)">
+    ```bash
+    ceph config rm global public_network
+    ceph config rm global cluster_network
+    ceph config set global public_network 10.50.0.0/24
+    ceph config set global cluster_network 10.50.0.0/24
+    ```
+  </Step>
+  <Step title="Restart OSDs Again">
+    One by one, verifying PG status after each
+  </Step>
+</Steps>
+
+## Risks Considered
+
+### Why This Change is Risky
+
+<Warning>
+  Changing Ceph cluster networking affects quorum, OSD availability, replication traffic, and client IO. Incorrect sequencing can cause data unavailability or permanent loss.
+</Warning>
+
+### Failure Modes Considered
+
+- MON quorum loss
+- OSD flapping
+- Client IO stalls
+- Backfill storms
+- Split-brain conditions
+
+### Assumptions
+
+- Single Ceph cluster
+- Dedicated replication network (fabric)
+- Change executed during low IO window
+
+## Final State
+
+<CardGroup cols={2}>
+  <Card title="Dedicated Fabric" icon="network-wired">
+    2.5 GbE Ceph-only network
+  </Card>
+  <Card title="Clean Separation" icon="layer-group">
+    No Ceph traffic on management NIC
+  </Card>
+  <Card title="Full Migration" icon="check-double">
+    MON / MGR / MDS / OSD all migrated
+  </Card>
+  <Card title="No Data Loss" icon="shield-check">
+    Stable cluster, zero downtime
+  </Card>
+</CardGroup>
+
+## Acknowledgements
+
+This migration approach was heavily informed by the Proxmox forum discussion on Ceph network changes, which provided critical guidance on:
+
+- Temporarily running **dual public networks**
+- **Recreating MON, MGR, and MDS daemons** to force address rebinding
+- Avoiding full cluster downtime during network migration
+
+**Source**: [Proxmox Forum – Ceph: changing public network](https://forum.proxmox.com/threads/ceph-changing-public-network.119116/)
+
+<Tip>
+  Always test network migration procedures in a non-production environment first, and schedule changes during maintenance windows.
+</Tip>

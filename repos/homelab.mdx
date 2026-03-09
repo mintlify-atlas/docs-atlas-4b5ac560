@@ -1,0 +1,222 @@
+---
+title: "Homelab"
+description: "Personal infrastructure lab environment for experimentation, learning, and production services"
+icon: "server"
+---
+
+<Info>
+Personal infrastructure lab environment focused on hardware, networking, virtualization, and infrastructure-as-code principles.
+</Info>
+
+## Overview
+
+The homelab repository documents a production-grade personal infrastructure environment used for:
+
+- **Learning and experimentation** with enterprise technologies
+- **Production self-hosted services** (monitoring, automation, storage)
+- **Security research** in isolated environments
+- **Infrastructure-as-code** testing and validation
+
+<CardGroup cols={2}>
+  <Card title="Hardware" icon="microchip">
+    Physical servers, networking equipment, and storage systems
+  </Card>
+  <Card title="Virtualization" icon="layer-group">
+    Proxmox VE clusters and VM orchestration
+  </Card>
+  <Card title="Networking" icon="network-wired">
+    VLANs, routing, firewalls, and network segmentation
+  </Card>
+  <Card title="Automation" icon="gears">
+    Terraform, Ansible, and infrastructure-as-code workflows
+  </Card>
+</CardGroup>
+
+---
+
+## Hardware Documentation
+
+Detailed hardware specifications, limitations, and configuration guides.
+
+### Real-World Example: Mini PCs
+
+For a concrete example of out-of-band (OOB) management limitations on client hardware:
+
+<Card title="HP EliteDesk 800 G2 Mini" icon="computer" href="https://github.com/safesploitOrg/homelab/tree/main/hardware/mini-pcs/hp-elitedesk-800-g2">
+  Client-grade mini PC repurposed for homelab use. Documents OOB limitations, BIOS configuration, and deployment best practices.
+</Card>
+
+<Note>
+Client hardware (like mini PCs) typically lacks enterprise-grade remote management features such as:
+- IPMI / iLO / iDRAC interfaces
+- Remote power control
+- Serial-over-LAN (SOL)
+- Hardware health monitoring
+
+This impacts automation and remote troubleshooting capabilities.
+</Note>
+
+---
+
+## Key Features
+
+<Accordion title="Infrastructure-as-Code">
+All infrastructure is defined in code using:
+- **Terraform** for resource provisioning
+- **Ansible** for configuration management
+- **Git** for version control and change tracking
+- **CI/CD pipelines** for automated testing and deployment
+</Accordion>
+
+<Accordion title="Network Segmentation">
+Multiple VLANs for security isolation:
+- **Management VLAN** - Infrastructure management and monitoring
+- **Services VLAN** - Production services and applications
+- **IoT VLAN** - Untrusted IoT devices with restricted access
+- **Lab VLAN** - Experimental and testing environment
+</Accordion>
+
+<Accordion title="Monitoring & Observability">
+- Prometheus for metrics collection
+- Grafana for visualization
+- Loki for log aggregation
+- Alertmanager for incident notification
+</Accordion>
+
+<Accordion title="Backup & Disaster Recovery">
+- Automated backups with Proxmox Backup Server
+- Off-site replication
+- Regular restore testing
+- Documented recovery procedures
+</Accordion>
+
+---
+
+## Hardware Categories
+
+<Steps>
+  <Step title="Compute Nodes">
+    Servers running Proxmox VE for virtualization workloads
+  </Step>
+  
+  <Step title="Storage">
+    NAS systems with ZFS, Ceph, or TrueNAS for persistent storage
+  </Step>
+  
+  <Step title="Networking">
+    Managed switches, routers, and firewalls (pfSense, OPNsense)
+  </Step>
+  
+  <Step title="Mini PCs">
+    Low-power client hardware repurposed for specific workloads (monitoring, DNS, VPN)
+  </Step>
+</Steps>
+
+---
+
+## Use Cases
+
+### Learning & Certification
+
+<CardGroup cols={2}>
+  <Card title="Lab Environment" icon="flask">
+    Test new technologies without production impact
+  </Card>
+  <Card title="Certification Prep" icon="graduation-cap">
+    Hands-on practice for RHCE, CKA, AWS certifications
+  </Card>
+</CardGroup>
+
+### Production Services
+
+- **Self-hosted applications** (Nextcloud, GitLab, Vaultwarden)
+- **Network services** (Pi-hole, Unbound DNS, WireGuard VPN)
+- **Monitoring stack** (Prometheus, Grafana, Loki)
+- **Media server** (Plex, Jellyfin)
+
+### Security Research
+
+<Warning>
+Security research and vulnerability testing should only be conducted in isolated lab VLANs with no production access.
+</Warning>
+
+- **Vulnerable VM practice** (HackTheBox, TryHackMe)
+- **Malware analysis** in isolated sandbox
+- **IDS/IPS testing** (Suricata, Zeek)
+- **Penetration testing techniques**
+
+---
+
+## Documentation Structure
+
+The repository is organized by component:
+
+```txt
+homelab/
+├── hardware/
+│   ├── servers/
+│   ├── networking/
+│   ├── storage/
+│   └── mini-pcs/
+│       └── hp-elitedesk-800-g2/
+├── infrastructure/
+│   ├── terraform/
+│   ├── ansible/
+│   └── kubernetes/
+├── networking/
+│   ├── vlans/
+│   ├── firewall/
+│   └── vpn/
+├── monitoring/
+│   ├── prometheus/
+│   ├── grafana/
+│   └── alerts/
+└── docs/
+    ├── architecture/
+    ├── runbooks/
+    └── troubleshooting/
+```
+
+<Tip>
+Each component includes detailed README files with setup instructions, configuration examples, and troubleshooting guides.
+</Tip>
+
+---
+
+## Getting Started
+
+<Steps>
+  <Step title="Review Architecture">
+    Start with architecture documentation to understand the overall design and network topology
+  </Step>
+  
+  <Step title="Hardware Setup">
+    Follow hardware-specific guides for physical setup and initial configuration
+  </Step>
+  
+  <Step title="Network Configuration">
+    Configure VLANs, routing, and firewall rules according to security requirements
+  </Step>
+  
+  <Step title="Deploy Infrastructure">
+    Use Terraform and Ansible to provision and configure virtual infrastructure
+  </Step>
+  
+  <Step title="Enable Monitoring">
+    Deploy monitoring stack to gain visibility into system health and performance
+  </Step>
+</Steps>
+
+---
+
+## Repository Information
+
+- **Repository:** [github.com/safesploitOrg/homelab](https://github.com/safesploitOrg/homelab)
+- **Status:** Active
+- **Visibility:** Public
+- **Owner:** safesploit
+- **License:** MIT (check repository for current license)
+
+<Info>
+Contributions, issues, and suggestions are welcome! Please review the CONTRIBUTING.md file in the repository before submitting pull requests.
+</Info>

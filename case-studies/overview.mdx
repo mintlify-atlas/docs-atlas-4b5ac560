@@ -1,0 +1,169 @@
+---
+title: "Case Studies Overview"
+description: "Public incident case studies analyzed and documented by Zepher Ashe covering major cloud provider outages and security deprecations."
+---
+
+# Case Studies Overview
+
+This section contains in-depth technical analysis of major cloud infrastructure incidents and security deprecations. Each case study provides executive summaries, root cause analysis, timelines, impact assessments, and actionable lessons for DevOps, DevSecOps, and SRE teams.
+
+<Info>
+All case studies are based on publicly available information and official vendor communications, analyzed for educational and analytical purposes.
+</Info>
+
+## What's Included
+
+Each case study contains:
+
+<CardGroup cols={2}>
+  <Card title="Executive Summary" icon="file-lines">
+    High-level overview of the incident and its scope
+  </Card>
+  <Card title="Root Cause Analysis" icon="microscope">
+    Technical deep-dive into what went wrong and why
+  </Card>
+  <Card title="Timeline" icon="clock">
+    Detailed chronological breakdown of events
+  </Card>
+  <Card title="Impact Assessment" icon="chart-line">
+    Scope, severity, and affected services
+  </Card>
+  <Card title="Architecture Diagrams" icon="diagram-project">
+    Visual representation of failure cascades
+  </Card>
+  <Card title="Lessons Learned" icon="graduation-cap">
+    Actionable takeaways for engineering teams
+  </Card>
+</CardGroup>
+
+## Post-Mortem Analysis
+
+### Cloud Provider Outages
+
+<CardGroup cols={3}>
+  <Card title="AWS US-EAST-1 Outage" icon="aws" href="/case-studies/aws/2025-10-20">
+    **October 20, 2025**
+    
+    DNS bug causing DynamoDB endpoint failure cascaded globally across 142 services.
+  </Card>
+  
+  <Card title="Azure Front Door Outage" icon="microsoft" href="/case-studies/azure/2025-10-29">
+    **October 29, 2025**
+    
+    Invalid configuration rollout disrupted global CDN and routing for 8+ hours.
+  </Card>
+  
+  <Card title="Cloudflare Global Outage" icon="cloud" href="/case-studies/cloudflare/2025-11-18">
+    **November 18, 2025**
+    
+    Malformed bot-management file caused proxy panic and worldwide 5xx errors.
+  </Card>
+</CardGroup>
+
+### Security Deprecations
+
+<CardGroup cols={1}>
+  <Card title="NetNTLMv1 Cryptographic Death" icon="skull" href="/case-studies/deprecation/net-ntlmv1">
+    **2025**
+    
+    8.6 TB rainbow table release makes NetNTLMv1 equivalent to plaintext authentication.
+  </Card>
+</CardGroup>
+
+## Key Themes Across Incidents
+
+<Accordion title="Single Points of Failure">
+  Multiple incidents highlight the risk of centralizing control planes in single regions:
+  - AWS global services anchored in US-EAST-1
+  - Azure Front Door as a global entry point
+  - Cloudflare's tightly coupled proxy architecture
+  
+  **Lesson:** Design for regional isolation and multi-region redundancy from day one.
+</Accordion>
+
+<Accordion title="Configuration Management Risks">
+  Configuration changes bypassed validation in both Azure and Cloudflare incidents:
+  - Azure: Software defect allowed invalid config to skip safety checks
+  - Cloudflare: Auto-generated config lacked size validation
+  
+  **Lesson:** Treat configuration as code with full CI/CD pipelines, validation, and rollback mechanisms.
+</Accordion>
+
+<Accordion title="Cascading Failures">
+  Service interdependencies amplified initial failures:
+  - AWS: DNS → DynamoDB → EC2 → Lambda → CloudWatch
+  - Azure: AFD → Multiple identity and app services
+  - Cloudflare: Bot management → Proxy → Workers → Dashboard
+  
+  **Lesson:** Map and test failure domains; implement circuit breakers and graceful degradation.
+</Accordion>
+
+<Accordion title="Recovery Complexity">
+  All incidents required phased, careful recovery to avoid secondary failures:
+  - AWS: Gradual unthrottling over 6+ hours
+  - Azure: Phased reload to prevent instability
+  - Cloudflare: Sequential edge node validation
+  
+  **Lesson:** Pre-plan recovery procedures and maintain "last known good" configurations.
+</Accordion>
+
+## For Engineering Teams
+
+<Tabs>
+  <Tab title="DevOps">
+    ### Key Takeaways
+    - Pre-provision failover resources before outages occur
+    - Avoid architectures requiring control-plane calls during recovery
+    - Test "cannot create resources" scenarios in DR drills
+    - Document fault isolation boundaries explicitly
+    - Maintain origin failover paths (e.g., Traffic Manager, DNS)
+  </Tab>
+  
+  <Tab title="DevSecOps">
+    ### Key Takeaways
+    - Enforce multi-stage validation for all configuration changes
+    - Implement signed deployments and schema validation
+    - Monitor for phishing attempts following major outages
+    - Treat legacy protocols (like NetNTLMv1) as policy failures
+    - Ensure engineering access doesn't rely on failing components
+  </Tab>
+  
+  <Tab title="SRE">
+    ### Key Takeaways
+    - Deploy real-time health probes on config state loads
+    - Automate rollback on anomaly detection
+    - Implement canary deployments for global configs
+    - Correlate multi-service failures in observability tools
+    - Segment edge fleets to contain faulty rollouts
+  </Tab>
+</Tabs>
+
+<Warning>
+**Universal Lesson:** Cloud infrastructure is complex and interdependent. No provider is immune to major outages. Your architecture must account for vendor failures as a normal operating condition.
+</Warning>
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card title="AWS Fault Isolation" icon="link" href="https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html">
+    AWS whitepaper on fault isolation boundaries for global services
+  </Card>
+  
+  <Card title="Azure Status History" icon="link" href="https://azure.status.microsoft/en-gb/status/history/">
+    Official Azure service health and incident history
+  </Card>
+  
+  <Card title="Cloudflare Blog" icon="link" href="https://blog.cloudflare.com/">
+    Cloudflare's technical blog with incident reports
+  </Card>
+  
+  <Card title="MITRE ATT&CK" icon="link" href="https://attack.mitre.org/">
+    Framework for understanding adversary tactics and techniques
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**About the Author:** Zepher Ashe specializes in infrastructure security, incident response, and DevSecOps practices. All case studies are licensed under CC BY-NC-SA 4.0.
+</Note>

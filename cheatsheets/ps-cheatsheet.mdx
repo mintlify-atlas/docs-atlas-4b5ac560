@@ -1,0 +1,249 @@
+---
+title: "ps Quick Reference"
+description: "Fast, practical cheat sheet for process inspection and troubleshooting on Linux"
+icon: "list-check"
+---
+
+<Info>
+A fast, practical cheat sheet for process inspection and troubleshooting. Designed for rapid recall.
+</Info>
+
+## Mental Model
+
+`ps` shows running processes from the kernel's process table.
+
+<CardGroup cols={2}>
+  <Card title="BSD style" icon="terminal">
+    ```bash
+    ps aux
+    ```
+    Human-friendly output with all users
+  </Card>
+  <Card title="Unix style" icon="list">
+    ```bash
+    ps -ef
+    ```
+    Full format with PIDs and parent PIDs
+  </Card>
+</CardGroup>
+
+<Note>
+Both styles are useful in different contexts. BSD style is typically more human-readable, while Unix style provides more detailed process hierarchy information.
+</Note>
+
+---
+
+## Most Common Commands
+
+### Show all processes (human-friendly)
+
+```bash
+ps aux
+```
+
+<Steps>
+  <Step title="a flag">
+    Show processes for all users
+  </Step>
+  <Step title="u flag">
+    Detailed/user-oriented output format
+  </Step>
+  <Step title="x flag">
+    Include processes without a TTY (daemons)
+  </Step>
+</Steps>
+
+### Show all processes (Unix format)
+
+```bash
+ps -ef
+```
+
+- `-e` = everything
+- `-f` = full format (UID, PPID, CMD, args)
+
+---
+
+## Filtering Processes
+
+<Accordion title="Search for a process by name">
+```bash
+ps aux | grep sshd
+```
+Uses grep to filter process list for specific name.
+</Accordion>
+
+<Accordion title="Using ps built-in pattern match (GNU)">
+```bash
+ps -C sshd -f
+```
+More efficient than piping to grep.
+</Accordion>
+
+<Accordion title="Show processes for a user">
+```bash
+ps -u root
+```
+Lists all processes owned by the specified user.
+</Accordion>
+
+<Accordion title="Filter by PID">
+```bash
+ps -p 1234 -f
+```
+Shows detailed information for a specific process ID.
+</Accordion>
+
+---
+
+## Useful Columns (What They Mean)
+
+| Column | Meaning |
+|--------|----------|
+| PID | Process ID |
+| PPID | Parent process ID |
+| UID | User owning the process |
+| %CPU | CPU usage percentage |
+| %MEM | Memory usage percentage |
+| VSZ | Virtual memory size (KB) |
+| RSS | Resident memory (physical RAM in KB) |
+| STAT | Process state |
+| TIME | CPU time consumed |
+| COMMAND | Command executed |
+
+### Process State Codes (STAT)
+
+<CardGroup cols={3}>
+  <Card title="R" icon="play">
+    Running
+  </Card>
+  <Card title="S" icon="moon">
+    Sleeping (waiting for event)
+  </Card>
+  <Card title="D" icon="pause">
+    Uninterruptible sleep (usually I/O)
+  </Card>
+  <Card title="T" icon="stop">
+    Stopped (by signal)
+  </Card>
+  <Card title="Z" icon="ghost">
+    Zombie (terminated but not reaped)
+  </Card>
+  <Card title="+" icon="arrow-up">
+    Foreground process group
+  </Card>
+</CardGroup>
+
+<Warning>
+Zombie processes (`Z` state) indicate the parent process hasn't properly cleaned up. They consume PID table entries but no actual resources.
+</Warning>
+
+---
+
+## Formatting Output
+
+<Accordion title="Custom columns">
+```bash
+ps -eo pid,ppid,user,%cpu,%mem,cmd
+```
+Select only the columns you need for better readability.
+</Accordion>
+
+<Accordion title="Sorted by memory">
+```bash
+ps -eo pid,user,%mem,cmd --sort=-%mem
+```
+Shows highest memory consumers first (note the `-` prefix for descending order).
+</Accordion>
+
+<Accordion title="Sorted by CPU">
+```bash
+ps -eo pid,user,%cpu,cmd --sort=-%cpu
+```
+Identifies CPU-intensive processes quickly.
+</Accordion>
+
+<Accordion title="Tree view (relationships)">
+```bash
+ps -ejH
+```
+
+Or:
+
+```bash
+ps -ef --forest
+```
+Shows parent-child process relationships visually.
+</Accordion>
+
+<Tip>
+Use custom column selection (`-eo`) to reduce noise and focus on relevant information during troubleshooting.
+</Tip>
+
+---
+
+## Practical Troubleshooting Examples
+
+### Highest CPU consumers
+
+```bash
+ps -eo pid,%cpu,cmd --sort=-%cpu | head
+```
+
+Quickly identify processes consuming the most CPU time.
+
+### Highest memory consumers
+
+```bash
+ps -eo pid,%mem,cmd --sort=-%mem | head
+```
+
+Find memory-hungry processes during resource exhaustion incidents.
+
+### Find processes holding deleted files
+
+```bash
+ps -ef | grep deleted
+```
+
+<Note>
+Processes holding open file handles to deleted files can cause disk space issues. Use `lsof` for more detailed investigation.
+</Note>
+
+### Show environment variables for a PID
+
+```bash
+ps -p 1234 -eo pid,cmd
+cat /proc/1234/environ | tr '\0' '\n'
+```
+
+Useful for debugging configuration or credential issues.
+
+---
+
+## Minimal Recall Table
+
+| Concept | Shortcut |
+|---------|----------|
+| All processes | `ps aux` or `ps -ef` |
+| Filter by name | `ps aux | grep name` |
+| Custom columns | `ps -eo ...` |
+| Sort by CPU | `--sort=-%cpu` |
+| Sort by memory | `--sort=-%mem` |
+| Tree view | `--forest` |
+
+---
+
+## When to Use ps vs. Other Tools
+
+| Goal | Use |
+|------|------|
+| Live, updating view | `top`, `htop` |
+| Deep inspection | `/proc/<pid>/` |
+| Check file handles | `lsof` |
+| Check open sockets | `ss` |
+| Full system monitoring | `atop`, `glances` |
+
+<Info>
+`ps` provides a snapshot at a point in time. For continuous monitoring, use `top`, `htop`, or `atop` instead.
+</Info>

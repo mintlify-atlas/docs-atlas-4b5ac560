@@ -1,122 +1,125 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "safesploitOrg Documentation",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#2563eb",
+    "light": "#3b82f6",
+    "dark": "#1e40af"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/safesploitOrg/docs"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/safesploitOrg/docs"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Guides",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "guides/overview",
+              "guides/linux/overview",
+              "guides/linux/rhel9-migrate-iptables-to-nftables",
+              "guides/networking/overview",
+              "guides/networking/vpc-basics",
+              "guides/networking/route-tables",
+              "guides/networking/bgp",
+              "guides/networking/ospf",
+              "guides/networking/static-vs-dynamic-routing",
+              "guides/networking/cidr-notation-table",
+              "guides/networking/vlsm-calculator",
+              "guides/networking/vlan-trunking",
+              "guides/passwords/strong-memorable-passwords"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Best Practices",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "best-practices/overview",
+              "best-practices/linux/overview",
+              "best-practices/linux/nftables",
+              "best-practices/linux/observability",
+              "best-practices/linux/storage/lvm",
+              "best-practices/linux/storage/ceph",
+              "best-practices/linux/storage/online-resize"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Case Studies",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "case-studies/overview"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Cloud Providers",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "case-studies/aws/2025-10-20",
+              "case-studies/azure/2025-10-29",
+              "case-studies/cloudflare/2025-11-18"
+            ]
+          },
+          {
+            "group": "Other Incidents",
+            "pages": [
+              "case-studies/deprecation/net-ntlmv1"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Quick Reference",
+            "pages": [
+              "cheatsheets/overview",
+              "cheatsheets/awk-cheatsheet",
+              "cheatsheets/ps-cheatsheet"
+            ]
+          },
+          {
+            "group": "Compliance & Security",
+            "pages": [
+              "compliance/overview"
+            ]
+          },
+          {
+            "group": "Prompt Engineering",
+            "pages": [
+              "prompt-engineering/overview"
+            ]
+          },
+          {
+            "group": "Repository Info",
+            "pages": [
+              "repos/overview",
+              "repos/homelab",
+              "repos/proxmox-userscripts"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

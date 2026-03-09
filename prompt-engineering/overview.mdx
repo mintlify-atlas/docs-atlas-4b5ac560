@@ -1,0 +1,296 @@
+---
+title: "Prompt Engineering"
+description: "Infrastructure-as-text: versioned, peer-reviewed prompts for AI-assisted workflows"
+icon: "brain"
+---
+
+<Info>
+This section defines how we design, test, and govern prompts for AI-assisted workflows. Prompts are treated as **infrastructure-as-text** — versioned, peer-reviewed, and subject to the same quality and security controls as code.
+</Info>
+
+## Purpose
+
+Prompt engineering provides structured, reproducible AI interactions for DevSecOps, infrastructure automation, and documentation pipelines.
+
+<CardGroup cols={3}>
+  <Card title="Reproducibility" icon="rotate">
+    Build a versioned prompt library for consistent results
+  </Card>
+  <Card title="Security" icon="lock">
+    Secure-by-default design: no data leakage or secrets exposure
+  </Card>
+  <Card title="Quality" icon="star">
+    Peer-reviewed patterns for clarity and reusability
+  </Card>
+</CardGroup>
+
+### Goals
+
+<Steps>
+  <Step title="Reproducible Library">
+    Build a versioned prompt library for code, documentation, and automation use cases
+  </Step>
+  <Step title="Consistent Patterns">
+    Establish patterns for clarity, safety, and reusability across all prompts
+  </Step>
+  <Step title="Secure by Default">
+    Prevent data leakage, secrets exposure, and unintended actions
+  </Step>
+</Steps>
+
+---
+
+## Folder Structure
+
+```ini
+prompt-engineering/
+├── README.md     # This overview
+├── guides/       # How-tos and design/evaluation guides
+├── templates/    # Prompt card templates and checklists
+└── examples/     # Demonstrations of prompt workflows
+```
+
+### Folder Purposes
+
+| Folder | Description |
+|--------|-------------|
+| **library/** | Production-ready prompts reviewed and approved for use in workflows and automation pipelines |
+| **guides/** | Walkthroughs explaining prompt-design techniques, testing methods, and quality assurance |
+| **templates/** | Standard templates and governance checklists for new prompt submissions |
+| **examples/** | Example prompts and workflows showing chaining, RAG, or evaluation setups |
+
+---
+
+## Prompt Card Specification
+
+Every prompt file must include **YAML frontmatter** at the top followed by markdown content.
+
+<Warning>
+A standard template lives in `templates/prompt-card-template.md`. All prompts must follow this structure.
+</Warning>
+
+### Required Frontmatter Fields
+
+| Field | Purpose |
+|-------|----------|
+| `title` | Human-readable title of the prompt |
+| `id` | Unique identifier (`<topic>-<purpose>-vX`) |
+| `intent` | Short summary of what the prompt achieves |
+| `tags` | Searchable keywords (e.g. `terraform`, `security`, `ci/cd`) |
+| `author` / `owner` | Who wrote and maintains it |
+| `model` | Model family tested against (e.g. `gpt-5`, `claude-3`) |
+| `temperature` / `max_tokens` | Key model parameters |
+| `version` | Semantic version of the prompt |
+| `last_reviewed` | ISO date of last validation |
+| `safety_reviewed` | `true` or `false` — must be `true` for production use |
+
+---
+
+## Security & Compliance Guidelines
+
+<Note>
+Prompt engineering follows the same rules as code and infrastructure. Security is non-negotiable.
+</Note>
+
+### Security Checklist
+
+<Steps>
+  <Step title="No Secrets or Real Data">
+    Never embed secrets, credentials, or real data in prompt examples. Use `<PLACEHOLDER>` or `<REDACTED>` markers.
+  </Step>
+  
+  <Step title="Avoid PII and Internal Identifiers">
+    No personal information, internal hostnames, or system identifiers in prompts.
+  </Step>
+  
+  <Step title="No Data Exfiltration">
+    Prompts should never query live environments or exfiltrate data to external systems.
+  </Step>
+  
+  <Step title="Review for Correctness">
+    Test every prompt for:
+    - Output correctness and determinism
+    - Data handling (no unintended exposure)
+    - Bias and tone alignment
+    - Model-agnostic performance
+  </Step>
+  
+  <Step title="Safety Checklist">
+    All prompts must pass the security checklist in `templates/safety-checklist.md` before production use.
+  </Step>
+</Steps>
+
+<Warning>
+**All prompts must pass the security checklist** before they can be marked `safety_reviewed: true` and used in production workflows.
+</Warning>
+
+---
+
+## Prompt Templates
+
+Two key templates are provided:
+
+<CardGroup cols={2}>
+  <Card title="Safety Checklist" icon="shield-check">
+    Comprehensive security and compliance verification for all prompts. Covers secrets, PII, data handling, and ethical review.
+  </Card>
+  <Card title="Ruthless Mentor" icon="comments">
+    Stress-test ideas with brutally honest critique. Designed to find flaws and strengthen reasoning before public review.
+  </Card>
+</CardGroup>
+
+### Safety Checklist Highlights
+
+<Accordion title="Security Controls (Required)">
+- ✅ No hard-coded secrets, keys, or tokens
+- ✅ No real hostnames, IPs, or infrastructure identifiers
+- ✅ No personal or sensitive data in examples
+- ✅ Prompts do not request or encourage data exfiltration
+- ✅ Output handling is deterministic and bias-free
+- ✅ Example inputs contain only sanitized data
+</Accordion>
+
+<Accordion title="Compliance & Governance (Required)">
+- ✅ Aligns with Cyber Essentials+ and NIST 800-53 confidentiality principles
+- ✅ Supports least-privilege and minimal disclosure design
+- ✅ No vendor lock-in or proprietary data dependencies
+- ✅ Language and tone appropriate for workplace/public use
+- ✅ Complies with ethical AI guidelines
+</Accordion>
+
+<Accordion title="Functional Validation">
+- ⚙️ Runs successfully in test harness
+- ✅ Outputs match expected structure
+- ✅ Determinism validated for low-temperature prompts
+- ⚙️ Stress-tested with edge cases
+- ✅ Version incremented after material changes
+</Accordion>
+
+### Ruthless Mentor Template
+
+<Accordion title="Purpose">
+Activates a **ruthless mentor persona** for brutally honest, high-signal critique of ideas, plans, or arguments.
+
+**Use when:**
+- Finding flaws, weak assumptions, or logical gaps
+- Preparing for critical reviews or public scrutiny
+- Refining strategy or technical plans that must be airtight
+</Accordion>
+
+<Accordion title="Instruction">
+```text
+You're my ruthless mentor. 
+Don't sugarcoat anything. 
+If my idea is weak, call it trash and tell me why. 
+Your job is to stress-test everything I say until it's bulletproof.
+```
+</Accordion>
+
+<Accordion title="Output Structure">
+The model responds with:
+
+```markdown
+## 💀 Brutal Critique
+[List every flaw, assumption, or oversight — direct and unfiltered.]
+
+## 🩹 Fix or Strengthen
+[Provide actionable ways to fix each issue.]
+
+## 🧱 Bulletproof Version
+[Show the improved, strengthened version of the idea.]
+```
+</Accordion>
+
+<Accordion title="Example Use Case">
+**Input:**
+```yaml
+idea: "Launch a cybersecurity consultancy for small businesses by next year."
+context: "UK market. Limited capital and no team yet."
+depth: "deep"
+```
+
+**Output:**
+- **Critique:** Weak differentiation, saturated market, unrealistic timeline
+- **Fixes:** Narrow to niche (e.g., NHS supply-chain SMEs), build credibility first, create staged roadmap
+- **Bulletproof Version:** "Launch lean Cyber Essentials+ automation for healthcare suppliers. Phase 1: content + pilots. Phase 2: recurring compliance reports. Phase 3: managed service."
+</Accordion>
+
+---
+
+## Workflow Integration
+
+<Steps>
+  <Step title="Design">
+    Create prompt using the prompt card template with all required frontmatter fields
+  </Step>
+  
+  <Step title="Test">
+    Validate against target models with edge cases and measure determinism
+  </Step>
+  
+  <Step title="Security Review">
+    Complete safety checklist — ensure no secrets, PII, or data leakage
+  </Step>
+  
+  <Step title="Peer Review">
+    Domain expert and security reviewer sign off on prompt
+  </Step>
+  
+  <Step title="Version & Deploy">
+    Mark `safety_reviewed: true` and commit to prompt library
+  </Step>
+</Steps>
+
+<Tip>
+**Chain prompts for complex workflows:** Use the ruthless mentor as a pre-flight filter, then follow with a positive-mentor prompt to rebuild tone after critique.
+</Tip>
+
+---
+
+## Best Practices
+
+### Design Principles
+
+<CardGroup cols={2}>
+  <Card title="Explicit Intent" icon="bullseye">
+    Clearly state what the prompt should achieve and what constitutes success
+  </Card>
+  <Card title="Structured Output" icon="list">
+    Define expected output format (JSON, markdown sections, etc.)
+  </Card>
+  <Card title="Model Agnostic" icon="microchip">
+    Test across multiple model families when possible
+  </Card>
+  <Card title="Deterministic" icon="lock">
+    Use low temperature (0.1-0.3) for reproducible results
+  </Card>
+</CardGroup>
+
+### Testing & Validation
+
+- Test with **edge cases** and invalid inputs
+- Validate **output format** consistency
+- Measure **determinism** across multiple runs
+- Document **model-specific quirks** in prompt card
+
+### Version Control
+
+<Note>
+Treat prompts like code:
+- Use semantic versioning (v1.0, v1.1, v2.0)
+- Increment version on material changes
+- Maintain changelog in prompt card
+- Tag and release stable versions
+</Note>
+
+---
+
+## Resources
+
+- **Safety Checklist:** `templates/safety-checklist.md`
+- **Prompt Card Template:** `templates/prompt-card-template.md`
+- **Ruthless Mentor Template:** `templates/brutally-honest-feedbackup-template.md`
+
+<Tip>
+**Remember:** Prompts are infrastructure. They can leak data, execute actions, and shape model behaviour. Review them with the same diligence as infrastructure or application code.
+</Tip>
