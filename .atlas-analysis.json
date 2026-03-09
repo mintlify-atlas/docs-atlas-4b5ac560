@@ -1,0 +1,122 @@
+{
+  "projectType": "general",
+  "projectName": "safesploitOrg Documentation",
+  "projectDescription": "A comprehensive DevSecOps knowledge hub covering best practices, guides, case studies, and compliance documentation.",
+  "theme": "aspen",
+  "primaryColor": "#2563eb",
+  "lightColor": "#3b82f6",
+  "darkColor": "#1e40af",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/overview",
+              "guides/linux/overview",
+              "guides/linux/rhel9-migrate-iptables-to-nftables",
+              "guides/networking/overview",
+              "guides/networking/vpc-basics",
+              "guides/networking/route-tables",
+              "guides/networking/bgp",
+              "guides/networking/ospf",
+              "guides/networking/static-vs-dynamic-routing",
+              "guides/networking/cidr-notation-table",
+              "guides/networking/vlsm-calculator",
+              "guides/networking/vlan-trunking",
+              "guides/passwords/strong-memorable-passwords"
+            ]
+          },
+          {
+            "group": "Best Practices",
+            "pages": [
+              "best-practices/overview",
+              "best-practices/linux/overview",
+              "best-practices/linux/nftables",
+              "best-practices/linux/observability",
+              "best-practices/linux/storage/lvm",
+              "best-practices/linux/storage/ceph",
+              "best-practices/linux/storage/online-resize"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Case Studies",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "case-studies/overview"
+            ]
+          },
+          {
+            "group": "Cloud Providers",
+            "pages": [
+              "case-studies/aws/2025-10-20",
+              "case-studies/azure/2025-10-29",
+              "case-studies/cloudflare/2025-11-18"
+            ]
+          },
+          {
+            "group": "Other Incidents",
+            "pages": [
+              "case-studies/deprecation/net-ntlmv1"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Quick Reference",
+            "pages": [
+              "cheatsheets/overview",
+              "cheatsheets/awk-cheatsheet",
+              "cheatsheets/ps-cheatsheet"
+            ]
+          },
+          {
+            "group": "Compliance & Security",
+            "pages": [
+              "compliance/overview"
+            ]
+          },
+          {
+            "group": "Prompt Engineering",
+            "pages": [
+              "prompt-engineering/overview"
+            ]
+          },
+          {
+            "group": "Repository Info",
+            "pages": [
+              "repos/overview",
+              "repos/homelab",
+              "repos/proxmox-userscripts"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Best practices for Linux systems, storage, and networking",
+    "Detailed guides for cloud infrastructure and networking",
+    "Post-mortem analysis of major cloud provider incidents",
+    "CLI tool cheatsheets and quick references",
+    "Compliance and security framework mappings",
+    "Prompt engineering standards and templates"
+  ],
+  "publicApiSurface": []
+}
